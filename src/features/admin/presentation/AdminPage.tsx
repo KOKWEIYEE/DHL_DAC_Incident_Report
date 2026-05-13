@@ -1,0 +1,130 @@
+import { AnimatePresence, motion } from 'motion/react';
+import { LogOut, Shield, UserPlus, Users } from 'lucide-react';
+import { useAdminPage } from '../logic/useAdminPage';
+import { CreateUserFeature } from './CreateUserFeature';
+import { ManageUserFeature } from './ManageUserFeature';
+import { SecurityFeature } from './SecurityFeature';
+
+interface AdminPageProps {
+  onLogout?: () => void;
+}
+
+export function AdminPage({ onLogout }: AdminPageProps) {
+  const {
+    activeTab,
+    createSuccess,
+    formData,
+    handleCreateFieldChange,
+    handleCreateUser,
+    handleRemoveUser,
+    handleSecurityFieldChange,
+    handleSecuritySubmit,
+    handleSecurityToggle,
+    handleTabClick,
+    handleToggleUserStatus,
+    searchTerm,
+    securitySaved,
+    securitySettings,
+    setSearchTerm,
+    users,
+  } = useAdminPage();
+
+  return (
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-white to-indigo-50 overflow-hidden">
+      <header className="bg-white/95 backdrop-blur border-b border-gray-200 px-6 py-4 flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">DHL Admin Center</h1>
+          <p className="text-xs text-gray-500 mt-0.5">Manage users, security settings, and global configurations.</p>
+        </div>
+
+        {onLogout && (
+          <button
+            type="button"
+            onClick={onLogout}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+          >
+            <LogOut size={16} />
+            Log out
+          </button>
+        )}
+      </header>
+
+      <div className="flex-1 overflow-y-auto">
+        <div className="w-full px-6 py-4">
+          <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg mb-4 w-fit">
+            {(['Create User', 'Manage User', 'Security'] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={handleTabClick(tab)}
+                className={`flex items-center gap-2 px-6 py-1.5 rounded-md text-xs font-bold transition-all ${
+                  activeTab === tab ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/80'
+                }`}
+              >
+                {tab === 'Create User' && <UserPlus size={14} />}
+                {tab === 'Manage User' && <Users size={14} />}
+                {tab === 'Security' && <Shield size={14} />}
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {activeTab === 'Create User' && (
+              <motion.div
+                key="create-user"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                <CreateUserFeature
+                  formData={formData}
+                  isSuccess={createSuccess}
+                  onFieldChange={handleCreateFieldChange}
+                  onSubmit={handleCreateUser}
+                />
+              </motion.div>
+            )}
+
+            {activeTab === 'Manage User' && (
+              <motion.div
+                key="manage-users"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ManageUserFeature
+                  users={users}
+                  searchTerm={searchTerm}
+                  onSearchTermChange={setSearchTerm}
+                  onToggleUserStatus={handleToggleUserStatus}
+                  onRemoveUser={handleRemoveUser}
+                />
+              </motion.div>
+            )}
+
+            {activeTab === 'Security' && (
+              <motion.div
+                key="security"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2 }}
+              >
+                <SecurityFeature
+                  settings={securitySettings}
+                  isSaved={securitySaved}
+                  onToggleSetting={handleSecurityToggle}
+                  onFieldChange={handleSecurityFieldChange}
+                  onSubmit={handleSecuritySubmit}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </div>
+  );
+}

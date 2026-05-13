@@ -1,36 +1,21 @@
 import React, { useState } from 'react';
-import { Sidebar } from './components/layout/Sidebar';
-import { Header } from './components/layout/Header';
-import { TicketsPage } from './features/tickets/TicketsPage';
-import { CreateTicketModal } from './features/tickets/components/CreateTicketModal';
-import { INITIAL_TICKETS } from './data/mockTickets';
-import { Ticket } from './types';
+import { AdminPage } from './features/admin/presentation/AdminPage';
+import { LoginPage } from './features/auth/login';
 
 export default function App() {
-  const [tickets, setTickets] = useState<Ticket[]>(INITIAL_TICKETS);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  const handleCreateTicket = (newTicket: Ticket) => {
-    setTickets([newTicket, ...tickets]);
-    setIsModalOpen(false);
-  };
+  function handleLogin() {
+    setIsAuthenticated(true);
+  }
 
-  return (
-    <div className="flex h-screen w-screen overflow-hidden bg-gray-50 font-sans text-gray-900">
-      <Sidebar />
+  function handleLogout() {
+    setIsAuthenticated(false);
+  }
 
-      <main className="flex-1 flex flex-col min-w-0">
-        <Header onCreateTicket={() => setIsModalOpen(true)} />
-        
-        <TicketsPage tickets={tickets} />
-      </main>
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
-      <CreateTicketModal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
-        onCreate={handleCreateTicket} 
-        nextId={1 + tickets.length} 
-      />
-    </div>
-  );
+  return <AdminPage onLogout={handleLogout} />;
 }
