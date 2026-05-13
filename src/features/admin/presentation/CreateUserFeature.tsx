@@ -32,8 +32,8 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
             <input
               type="text"
               required
-              value={formData.name}
-              onChange={handleFieldChange('name')}
+              value={formData.fullName}
+              onChange={handleFieldChange('fullName')}
               className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
               placeholder="e.g. John Doe"
             />
@@ -42,13 +42,13 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
           <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
             <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
               <Mail size={14} />
-              Work Email
+              Username / Email
             </label>
             <input
-              type="email"
+              type="text"
               required
-              value={formData.email}
-              onChange={handleFieldChange('email')}
+              value={formData.username}
+              onChange={handleFieldChange('username')}
               className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
               placeholder="j.doe@dhl.com"
             />
@@ -71,33 +71,18 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
 
           <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
             <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
-              <Briefcase size={14} />
-              Department
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.department}
-              onChange={handleFieldChange('department')}
-              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
-              placeholder="e.g. Operations"
-            />
-          </div>
-
-          <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
-            <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
               <ShieldCheck size={14} />
               System Role
             </label>
             <select
-              value={formData.role}
-              onChange={handleFieldChange('role')}
+              value={formData.roleName}
+              onChange={handleFieldChange('roleName')}
               className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900"
             >
-              <option value="Admin">Admin</option>
-              <option value="Manager">Manager</option>
-              <option value="Agent">Agent</option>
-              <option value="Auditor">Auditor</option>
+              <option value="user">User</option>
+              <option value="agent">Agent</option>
+              <option value="manager">Manager</option>
+              <option value="admin">Admin</option>
             </select>
           </div>
         </div>

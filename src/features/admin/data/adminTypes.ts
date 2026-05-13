@@ -1,21 +1,19 @@
 export type AdminTab = 'Create User' | 'Manage User' | 'Security';
 
 export interface CreateUserForm {
-  name: string;
-  email: string;
+  fullName: string;
+  username: string;
   password: string;
-  role: string;
-  department: string;
+  roleName: string;
 }
 
 export interface AdminUser {
   id: number;
-  name: string;
-  email: string;
-  role: string;
-  department: string;
+  username: string;
+  fullName: string;
+  roleName: string;
+  createdAt: string;
   status: 'Active' | 'Locked';
-  lastLogin: string;
 }
 
 export interface SecuritySettings {

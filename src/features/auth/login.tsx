@@ -1,25 +1,32 @@
-import React, { useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, LogIn, ShieldCheck } from 'lucide-react';
+import { loginUser } from './authApi';
+import { AuthenticatedUser } from './authTypes';
 
 interface LoginPageProps {
-  onLogin: (email: string) => void;
+  onLogin: (user: AuthenticatedUser) => void;
 }
 
 export function LoginPage({ onLogin }: LoginPageProps) {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      onLogin(email);
+
+    try {
+      const user = await loginUser(username, password);
+      onLogin(user);
+      setErrorMessage('');
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Unable to sign in.');
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -57,21 +64,21 @@ export function LoginPage({ onLogin }: LoginPageProps) {
           <div className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="email">
-                  Email address
+                <label className="block text-sm font-medium text-gray-700 mb-1.5" htmlFor="username">
+                  Username
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
-                    id="email"
+                    id="username"
                     type="text"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all outline-none text-gray-900 placeholder:text-gray-400 sm:text-sm"
-                    placeholder="name@company.com"
+                    placeholder="admin"
                   />
                 </div>
               </div>
@@ -134,6 +141,12 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 )}
               </button>
             </form>
+
+            {errorMessage && (
+              <div className="mt-4 rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {errorMessage}
+              </div>
+            )}
 
             <div className="mt-8 text-center">
               <p className="text-sm text-gray-500">

@@ -2,44 +2,11 @@ import { AdminUser, CreateUserForm, SecuritySettings } from './adminTypes';
 
 export function createDefaultCreateUserForm(): CreateUserForm {
   return {
-    name: '',
-    email: '',
+    fullName: '',
+    username: '',
     password: '',
-    role: 'Agent',
-    department: 'Customer Service',
+    roleName: 'user',
   };
-}
-
-export function createInitialAdminUsers(): AdminUser[] {
-  return [
-    {
-      id: 1,
-      name: 'Ava Johnson',
-      email: 'ava.johnson@dhl.com',
-      role: 'Admin',
-      department: 'Operations',
-      status: 'Active',
-      lastLogin: 'Today, 08:15',
-    },
-    {
-      id: 2,
-      name: 'Marcus Lee',
-      email: 'marcus.lee@dhl.com',
-      role: 'Manager',
-      department: 'Support',
-      status: 'Active',
-      lastLogin: 'Yesterday, 17:42',
-    },
-    {
-      id: 3,
-      name: 'Priya Shah',
-      email: 'priya.shah@dhl.com',
-      role: 'Agent',
-      department: 'Customer Service',
-      status: 'Locked',
-      lastLogin: '3 days ago',
-    },
-  ];
 }
 
 export function createInitialSecuritySettings(): SecuritySettings {

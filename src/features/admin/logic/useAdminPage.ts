@@ -1,19 +1,36 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import {
   createDefaultCreateUserForm,
-  createInitialAdminUsers,
   createInitialSecuritySettings,
 } from '../data/adminData';
+import { createAdminUser, deleteAdminUser, fetchAdminUsers } from '../data/adminApi';
 import { AdminTab, AdminUser, CreateUserForm, SecuritySettings } from '../data/adminTypes';
 
 export function useAdminPage() {
   const [activeTab, setActiveTab] = useState<AdminTab>('Create User');
   const [formData, setFormData] = useState<CreateUserForm>(createDefaultCreateUserForm);
-  const [users, setUsers] = useState<AdminUser[]>(createInitialAdminUsers);
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>(createInitialSecuritySettings);
   const [createSuccess, setCreateSuccess] = useState(false);
   const [securitySaved, setSecuritySaved] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
+  const [userActionMessage, setUserActionMessage] = useState('');
+
+  useEffect(() => {
+    void loadUsers();
+  }, []);
+
+  async function loadUsers() {
+    setIsLoadingUsers(true);
+
+    try {
+      const fetchedUsers = await fetchAdminUsers();
+      setUsers(fetchedUsers);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  }
 
   function handleTabClick(tab: AdminTab) {
     return () => {
@@ -28,21 +45,11 @@ export function useAdminPage() {
     }));
   }
 
-  function handleCreateUser(event: FormEvent<HTMLFormElement>) {
+  async function handleCreateUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const nextUserId = users.length === 0 ? 1 : Math.max(...users.map((user) => user.id)) + 1;
-    const createdUser: AdminUser = {
-      id: nextUserId,
-      name: formData.name,
-      email: formData.email,
-      role: formData.role,
-      department: formData.department,
-      status: 'Active',
-      lastLogin: 'Never',
-    };
-
-    setUsers((currentUsers) => [createdUser, ...currentUsers]);
+    await createAdminUser(formData);
+    await loadUsers();
     setCreateSuccess(true);
     setFormData(createDefaultCreateUserForm());
 
@@ -66,8 +73,14 @@ export function useAdminPage() {
     );
   }
 
-  function handleRemoveUser(userId: number) {
-    setUsers((currentUsers) => currentUsers.filter((user) => user.id !== userId));
+  async function handleRemoveUser(userId: number) {
+    await deleteAdminUser(userId);
+    await loadUsers();
+    setUserActionMessage('User removed from the database.');
+
+    window.setTimeout(() => {
+      setUserActionMessage('');
+    }, 2500);
   }
 
   function handleSecurityToggle(field: keyof Pick<SecuritySettings, 'mfaEnabled' | 'ipWhitelistEnabled' | 'auditLoggingEnabled'>) {
@@ -106,10 +119,12 @@ export function useAdminPage() {
     handleTabClick,
     handleToggleUserStatus,
     searchTerm,
+    isLoadingUsers,
+    userActionMessage,
     securitySaved,
     securitySettings,
     setSearchTerm,
     users,
-    setActiveTab,
+    reloadUsers: loadUsers,
   };
 }

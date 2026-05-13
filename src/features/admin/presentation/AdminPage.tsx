@@ -13,6 +13,7 @@ export function AdminPage({ onLogout }: AdminPageProps) {
   const {
     activeTab,
     createSuccess,
+    isLoadingUsers,
     formData,
     handleCreateFieldChange,
     handleCreateUser,
@@ -23,6 +24,7 @@ export function AdminPage({ onLogout }: AdminPageProps) {
     handleTabClick,
     handleToggleUserStatus,
     searchTerm,
+    userActionMessage,
     securitySaved,
     securitySettings,
     setSearchTerm,
@@ -78,12 +80,7 @@ export function AdminPage({ onLogout }: AdminPageProps) {
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.2 }}
               >
-                <CreateUserFeature
-                  formData={formData}
-                  isSuccess={createSuccess}
-                  onFieldChange={handleCreateFieldChange}
-                  onSubmit={handleCreateUser}
-                />
+                <CreateUserFeature formData={formData} isSuccess={createSuccess} onFieldChange={handleCreateFieldChange} onSubmit={handleCreateUser} />
               </motion.div>
             )}
 
@@ -123,6 +120,9 @@ export function AdminPage({ onLogout }: AdminPageProps) {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {isLoadingUsers && <div className="mt-4 text-xs text-gray-500">Loading users from the database...</div>}
+          {userActionMessage && <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{userActionMessage}</div>}
         </div>
       </div>
     </div>

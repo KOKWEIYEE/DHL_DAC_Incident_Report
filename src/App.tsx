@@ -1,21 +1,27 @@
 import React, { useState } from 'react';
 import { AdminPage } from './features/admin/presentation/AdminPage';
 import { LoginPage } from './features/auth/login';
+import { AuthenticatedUser } from './features/auth/authTypes';
+import { UserPage } from './features/user/presentation/UserPage';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentUser, setCurrentUser] = useState<AuthenticatedUser | null>(null);
 
-  function handleLogin() {
-    setIsAuthenticated(true);
+  function handleLogin(user: AuthenticatedUser) {
+    setCurrentUser(user);
   }
 
   function handleLogout() {
-    setIsAuthenticated(false);
+    setCurrentUser(null);
   }
 
-  if (!isAuthenticated) {
+  if (!currentUser) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  return <AdminPage onLogout={handleLogout} />;
+  if (currentUser.roleName.toLowerCase() === 'admin') {
+    return <AdminPage onLogout={handleLogout} />;
+  }
+
+  return <UserPage onLogout={handleLogout} />;
 }

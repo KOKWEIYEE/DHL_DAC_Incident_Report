@@ -7,7 +7,7 @@ interface ManageUserFeatureProps {
   searchTerm: string;
   onSearchTermChange: (value: string) => void;
   onToggleUserStatus: (userId: number) => void;
-  onRemoveUser: (userId: number) => void;
+  onRemoveUser: (userId: number) => void | Promise<void>;
 }
 
 export function ManageUserFeature({
@@ -23,7 +23,7 @@ export function ManageUserFeature({
       return true;
     }
 
-    return [user.name, user.email, user.role, user.department].some((value) => value.toLowerCase().includes(searchValue));
+    return [user.username, user.fullName, user.roleName, user.createdAt].some((value) => value.toLowerCase().includes(searchValue));
   });
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
@@ -82,7 +82,7 @@ export function ManageUserFeature({
                   <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">User</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Role</th>
                   <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Last Login</th>
+                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Created</th>
                   <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-gray-500">Actions</th>
                 </tr>
               </thead>
@@ -90,11 +90,10 @@ export function ManageUserFeature({
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50/70 transition-colors">
                     <td className="px-4 py-4">
-                      <div className="font-semibold text-gray-900">{user.name}</div>
-                      <div className="text-xs text-gray-500">{user.email}</div>
-                      <div className="text-[11px] text-gray-400 mt-0.5">{user.department}</div>
+                      <div className="font-semibold text-gray-900">{user.fullName}</div>
+                      <div className="text-xs text-gray-500">{user.username}</div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-700">{user.role}</td>
+                    <td className="px-4 py-4 text-sm text-gray-700">{user.roleName}</td>
                     <td className="px-4 py-4">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold ${
@@ -105,7 +104,7 @@ export function ManageUserFeature({
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">{user.lastLogin}</td>
+                    <td className="px-4 py-4 text-sm text-gray-600">{user.createdAt}</td>
                     <td className="px-4 py-4">
                       <div className="flex justify-end gap-2">
                         <button
@@ -133,6 +132,10 @@ export function ManageUserFeature({
           </div>
         )}
       </div>
+
+      {searchTerm && filteredUsers.length > 0 && (
+        <div className="px-8 pb-5 text-xs text-gray-500">Showing results for "{searchTerm}".</div>
+      )}
     </div>
   );
 }
