@@ -16,7 +16,6 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets }) => {
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Status</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Ticket ID</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Subject / Issue</th>
-              <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Requester</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Assignee</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Priority</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Time Created</th>
@@ -34,16 +33,6 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets }) => {
                 </td>
                 <td className="py-3 px-4 text-sm text-slate-800 max-w-[200px] truncate" title={ticket.subject}>
                   {ticket.subject}
-                </td>
-                <td className="py-3 px-4 text-sm text-slate-800">
-                  <div className="flex items-center gap-2">
-                    <img 
-                      src={ticket.requesterAvatar} 
-                      alt={ticket.requester}
-                      className="w-6 h-6 rounded-full bg-slate-200 object-cover"
-                    />
-                    {ticket.requester}
-                  </div>
                 </td>
                 <td className="py-3 px-4 text-sm text-slate-800">
                   {ticket.department}

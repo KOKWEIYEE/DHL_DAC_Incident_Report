@@ -12,7 +12,7 @@ interface CreateTicketModalProps {
 export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate, nextId }) => {
   const [priority, setPriority] = useState('Medium');
   const [subject, setSubject] = useState('Ticket with and image');
-  const [group, setGroup] = useState('Cave');
+  const [group, setGroup] = useState('IT Services');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -71,10 +71,10 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
       requester: 'Admin User',
       requesterAvatar: 'https://i.pravatar.cc/150?u=admin',
       subject: subject || 'New Request',
-      department: group || 'Support',
+      department: group || 'IT Services',
       lastUpdated: `${dateStr} ${timeStr}`,
       timeCreated: `${dateStr} ${timeStr}`,
-      status: 'Open',
+      status: 'Draft',
       priority: priority
     };
     onCreate(newTicket);
@@ -96,16 +96,17 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
             </div>
             
             <div className="mb-6">
-                <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Group</label>
+                <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Department</label>
                 <select 
                 className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 bg-transparent text-[15px]"
                 value={group} 
                 onChange={e=>setGroup(e.target.value)}
                 >
-                <option>Cave</option>
-                <option>IT Support</option>
-                <option>HR</option>
-                <option>Engineering</option>
+                <option value="IT Services">IT Services</option>
+                <option value="Operation">Operation</option>
+                <option value="Customer Services">Customer Services</option>
+                <option value="Human Resources">Human Resources</option>
+                <option value="Sales">Sales</option>
                 </select>
             </div>
             

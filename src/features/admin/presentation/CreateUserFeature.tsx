@@ -42,15 +42,15 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
           <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
             <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
               <Mail size={14} />
-              Username / Email
+              Email
             </label>
             <input
-              type="text"
+              type="email"
               required
               value={formData.username}
               onChange={handleFieldChange('username')}
               className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
-              placeholder="j.doe@dhl.com"
+              placeholder="john.doe@company.com"
             />
           </div>
 
@@ -74,14 +74,19 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
               <Briefcase size={14} />
               Department
             </label>
-            <input
-              type="text"
+            <select
               required
               value={formData.department}
               onChange={handleFieldChange('department')}
-              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
-              placeholder="e.g. Operations"
-            />
+              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900"
+            >
+              <option value="">Select a department</option>
+              <option value="IT Services">IT Services</option>
+              <option value="Operation">Operation</option>
+              <option value="Customer Services">Customer Services</option>
+              <option value="Human Resources">Human Resources</option>
+              <option value="Sales">Sales</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
@@ -89,16 +94,14 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
               <ShieldCheck size={14} />
               System Role
             </label>
-            <select
+            <input
+              type="text"
+              required
               value={formData.roleName}
               onChange={handleFieldChange('roleName')}
-              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900"
-            >
-              <option value="user">User</option>
-              <option value="agent">Agent</option>
-              <option value="manager">Manager</option>
-              <option value="admin">Admin</option>
-            </select>
+              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
+              placeholder="e.g. user, agent, manager"
+            />
           </div>
         </div>
 

@@ -66,10 +66,6 @@ export const Sidebar: React.FC = () => {
         </div>
 
         <a href="#" className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-2">
-          <Users size={18} />
-          Customers
-        </a>
-        <a href="#" className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
           <BarChart3 size={18} />
           Reports
         </a>
