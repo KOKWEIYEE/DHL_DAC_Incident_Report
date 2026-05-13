@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { AuthenticatedUser } from '../../auth/authTypes';
 import {
   createDefaultCreateUserForm,
   createInitialSecuritySettings,
@@ -6,7 +7,7 @@ import {
 import { createAdminUser, deleteAdminUser, fetchAdminUsers } from '../data/adminApi';
 import { AdminTab, AdminUser, CreateUserForm, SecuritySettings } from '../data/adminTypes';
 
-export function useAdminPage() {
+export function useAdminPage(currentUser?: AuthenticatedUser) {
   const [activeTab, setActiveTab] = useState<AdminTab>('Create User');
   const [formData, setFormData] = useState<CreateUserForm>(createDefaultCreateUserForm);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -14,6 +15,7 @@ export function useAdminPage() {
   const [createSuccess, setCreateSuccess] = useState(false);
   const [securitySaved, setSecuritySaved] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('All');
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [userActionMessage, setUserActionMessage] = useState('');
 
@@ -30,6 +32,36 @@ export function useAdminPage() {
     } finally {
       setIsLoadingUsers(false);
     }
+  }
+
+  async function requirePasswordConfirmation(actionLabel: string): Promise<boolean> {
+    if (!currentUser) {
+      setUserActionMessage('Missing current user context. Please sign in again.');
+      return false;
+    }
+
+    const password = window.prompt(`Enter your password to ${actionLabel}:`);
+    if (!password) {
+      return false;
+    }
+
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username: currentUser.username, password }),
+    });
+
+    if (!response.ok) {
+      setUserActionMessage('Password verification failed.');
+      window.setTimeout(() => {
+        setUserActionMessage('');
+      }, 2500);
+      return false;
+    }
+
+    return true;
   }
 
   function handleTabClick(tab: AdminTab) {
@@ -58,7 +90,12 @@ export function useAdminPage() {
     }, 2500);
   }
 
-  function handleToggleUserStatus(userId: number) {
+  async function handleToggleUserStatus(userId: number) {
+    const confirmed = await requirePasswordConfirmation('change this user status');
+    if (!confirmed) {
+      return;
+    }
+
     setUsers((currentUsers) =>
       currentUsers.map((user) => {
         if (user.id !== userId) {
@@ -74,6 +111,11 @@ export function useAdminPage() {
   }
 
   async function handleRemoveUser(userId: number) {
+    const confirmed = await requirePasswordConfirmation('delete this user');
+    if (!confirmed) {
+      return;
+    }
+
     await deleteAdminUser(userId);
     await loadUsers();
     setUserActionMessage('User removed from the database.');
@@ -110,6 +152,7 @@ export function useAdminPage() {
     activeTab,
     createSuccess,
     formData,
+    departmentFilter,
     handleCreateFieldChange,
     handleCreateUser,
     handleRemoveUser,
@@ -123,6 +166,7 @@ export function useAdminPage() {
     userActionMessage,
     securitySaved,
     securitySettings,
+    setDepartmentFilter,
     setSearchTerm,
     users,
     reloadUsers: loadUsers,

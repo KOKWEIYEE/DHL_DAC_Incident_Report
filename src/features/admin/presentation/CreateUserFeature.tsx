@@ -71,6 +71,21 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
 
           <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
             <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
+              <Briefcase size={14} />
+              Department
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.department}
+              onChange={handleFieldChange('department')}
+              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
+              placeholder="e.g. Operations"
+            />
+          </div>
+
+          <div className="grid grid-cols-[220px_1fr] items-center px-8 py-1 hover:bg-gray-50/50 transition-colors">
+            <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
               <ShieldCheck size={14} />
               System Role
             </label>

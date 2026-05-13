@@ -6,6 +6,9 @@ interface ManageUserFeatureProps {
   users: AdminUser[];
   searchTerm: string;
   onSearchTermChange: (value: string) => void;
+  departmentFilter: string;
+  departmentOptions: string[];
+  onDepartmentFilterChange: (value: string) => void;
   onToggleUserStatus: (userId: number) => void;
   onRemoveUser: (userId: number) => void | Promise<void>;
 }
@@ -14,16 +17,22 @@ export function ManageUserFeature({
   users,
   searchTerm,
   onSearchTermChange,
+  departmentFilter,
+  departmentOptions,
+  onDepartmentFilterChange,
   onToggleUserStatus,
   onRemoveUser,
 }: ManageUserFeatureProps) {
   const filteredUsers = users.filter((user) => {
     const searchValue = searchTerm.trim().toLowerCase();
     if (searchValue === '') {
-      return true;
+      return departmentFilter === 'All' || user.department === departmentFilter;
     }
 
-    return [user.username, user.fullName, user.roleName, user.createdAt].some((value) => value.toLowerCase().includes(searchValue));
+    const matchesSearch = [user.username, user.fullName, user.roleName, user.createdAt, user.department]
+      .some((value) => value.toLowerCase().includes(searchValue));
+    const matchesDepartment = departmentFilter === 'All' || user.department === departmentFilter;
+    return matchesSearch && matchesDepartment;
   });
 
   function handleSearchChange(event: ChangeEvent<HTMLInputElement>) {
@@ -38,15 +47,28 @@ export function ManageUserFeature({
           <p className="text-gray-500 text-[11px] mt-0.5">Review and manage active DHL Support accounts.</p>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            placeholder="Search accounts..."
-            className="pl-10 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded text-xs outline-none focus:ring-1 focus:ring-indigo-500 w-full md:w-64"
-          />
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              placeholder="Search accounts..."
+              className="pl-10 pr-4 py-1.5 bg-gray-50 border border-gray-200 rounded text-xs outline-none focus:ring-1 focus:ring-indigo-500 w-full md:w-64"
+            />
+          </div>
+          <select
+            value={departmentFilter}
+            onChange={(event) => onDepartmentFilterChange(event.target.value)}
+            className="px-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-xs outline-none focus:ring-1 focus:ring-indigo-500"
+          >
+            {departmentOptions.map((department) => (
+              <option key={department} value={department}>
+                Department: {department}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -92,6 +114,7 @@ export function ManageUserFeature({
                     <td className="px-4 py-4">
                       <div className="font-semibold text-gray-900">{user.fullName}</div>
                       <div className="text-xs text-gray-500">{user.username}</div>
+                      <div className="text-[11px] text-gray-400 mt-0.5">{user.department}</div>
                     </td>
                     <td className="px-4 py-4 text-sm text-gray-700">{user.roleName}</td>
                     <td className="px-4 py-4">

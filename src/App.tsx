@@ -20,7 +20,7 @@ export default function App() {
   }
 
   if (currentUser.roleName.toLowerCase() === 'admin') {
-    return <AdminPage onLogout={handleLogout} />;
+    return <AdminPage currentUser={currentUser} onLogout={handleLogout} />;
   }
 
   return <UserPage onLogout={handleLogout} />;

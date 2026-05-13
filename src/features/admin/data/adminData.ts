@@ -5,6 +5,7 @@ export function createDefaultCreateUserForm(): CreateUserForm {
     fullName: '',
     username: '',
     password: '',
+    department: 'Customer Service',
     roleName: 'user',
   };
 }

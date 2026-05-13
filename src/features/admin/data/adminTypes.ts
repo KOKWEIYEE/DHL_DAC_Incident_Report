@@ -4,6 +4,7 @@ export interface CreateUserForm {
   fullName: string;
   username: string;
   password: string;
+  department: string;
   roleName: string;
 }
 
@@ -11,6 +12,7 @@ export interface AdminUser {
   id: number;
   username: string;
   fullName: string;
+  department: string;
   roleName: string;
   createdAt: string;
   status: 'Active' | 'Locked';

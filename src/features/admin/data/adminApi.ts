@@ -4,6 +4,7 @@ interface ApiUserRecord {
   id: number;
   username: string;
   fullName: string;
+  department: string;
   roleName: string;
   createdAt: string;
 }
@@ -24,6 +25,7 @@ export async function fetchAdminUsers(): Promise<AdminUser[]> {
     id: user.id,
     username: user.username,
     fullName: user.fullName,
+    department: user.department ?? 'Unassigned',
     roleName: user.roleName,
     createdAt: new Date(user.createdAt).toLocaleString(),
     status: 'Active',
@@ -40,6 +42,7 @@ export async function createAdminUser(formData: CreateUserForm): Promise<void> {
       username: formData.username,
       password: formData.password,
       fullName: formData.fullName,
+      department: formData.department,
       roleName: formData.roleName,
     }),
   });

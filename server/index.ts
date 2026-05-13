@@ -14,6 +14,7 @@ type UserRow = RowDataPacket & {
   username: string;
   password_hash: string;
   full_name: string;
+  department: string | null;
   role_id: number;
   role_name: string;
   created_at: Date;
@@ -32,7 +33,7 @@ app.get('/api/health', (_req, res) => {
 
 app.get('/api/users', async (_req, res) => {
   const [rows] = await pool.query<UserRow[]>(
-    `SELECT u.id, u.username, u.password_hash, u.full_name, u.role_id, r.role_name, u.created_at
+    `SELECT u.id, u.username, u.password_hash, u.full_name, u.department, u.role_id, r.role_name, u.created_at
      FROM users u
      INNER JOIN roles r ON r.id = u.role_id
      ORDER BY u.id ASC`
@@ -43,6 +44,7 @@ app.get('/api/users', async (_req, res) => {
       id: user.id,
       username: user.username,
       fullName: user.full_name,
+      department: user.department ?? 'Unassigned',
       roleId: user.role_id,
       roleName: user.role_name,
       createdAt: user.created_at,
@@ -51,10 +53,11 @@ app.get('/api/users', async (_req, res) => {
 });
 
 app.post('/api/users', async (req, res) => {
-  const { username, password, fullName, roleName = 'user' } = req.body as {
+  const { username, password, fullName, department, roleName = 'user' } = req.body as {
     username?: string;
     password?: string;
     fullName?: string;
+    department?: string;
     roleName?: string;
   };
 
@@ -85,8 +88,8 @@ app.post('/api/users', async (req, res) => {
   }
 
   const [result] = await pool.execute(
-    'INSERT INTO users (username, password_hash, full_name, role_id) VALUES (?, ?, ?, ?)',
-    [username, hashedPassword, fullName, roleId]
+    'INSERT INTO users (username, password_hash, full_name, department, role_id) VALUES (?, ?, ?, ?, ?)',
+    [username, hashedPassword, fullName, department ?? null, roleId]
   );
 
   res.status(201).json({
@@ -102,16 +105,22 @@ app.patch('/api/users/:id', async (req, res) => {
     return;
   }
 
-  const { username, password, fullName, roleName } = req.body as {
+  const { username, password, fullName, department, roleName } = req.body as {
     username?: string;
     password?: string;
     fullName?: string;
+    department?: string;
     roleName?: string;
   };
 
-  const [existingRows] = await pool.query<RowDataPacket[]>('SELECT id FROM users WHERE id = ? LIMIT 1', [userId]);
+  const [existingRows] = await pool.query<RowDataPacket[]>('SELECT id, username FROM users WHERE id = ? LIMIT 1', [userId]);
   if (existingRows.length === 0) {
     res.status(404).json({ message: 'User not found.' });
+    return;
+  }
+
+  if ((existingRows[0] as { username?: string }).username === 'admin') {
+    res.status(403).json({ message: 'The admin account cannot be modified.' });
     return;
   }
 
@@ -131,6 +140,11 @@ app.patch('/api/users/:id', async (req, res) => {
   if (fullName) {
     updates.push('full_name = ?');
     values.push(fullName);
+  }
+
+  if (department) {
+    updates.push('department = ?');
+    values.push(department);
   }
 
   if (roleName) {
@@ -164,6 +178,17 @@ app.delete('/api/users/:id', async (req, res) => {
   const userId = Number(req.params.id);
   if (!Number.isInteger(userId)) {
     res.status(400).json({ message: 'Invalid user id.' });
+    return;
+  }
+
+  const [existingRows] = await pool.query<RowDataPacket[]>('SELECT username FROM users WHERE id = ? LIMIT 1', [userId]);
+  if (existingRows.length === 0) {
+    res.status(404).json({ message: 'User not found.' });
+    return;
+  }
+
+  if ((existingRows[0] as { username?: string }).username === 'admin') {
+    res.status(403).json({ message: 'The admin account cannot be deleted.' });
     return;
   }
 
@@ -221,14 +246,17 @@ async function seedDefaultAdmin() {
     throw new Error('Unable to resolve the admin role.');
   }
 
-  const [users] = await pool.query<RowDataPacket[]>('SELECT id FROM users WHERE username = ? LIMIT 1', ['admin']);
-  if (users.length === 0) {
-    const defaultPasswordHash = createHash('sha256').update('Admin@12345').digest('hex');
-    await pool.execute(
-      'INSERT INTO users (username, password_hash, full_name, role_id) VALUES (?, ?, ?, ?)',
-      ['admin', defaultPasswordHash, 'System Administrator', adminRoleId]
-    );
-  }
+  const defaultPasswordHash = createHash('sha256').update('Admin@12345').digest('hex');
+  await pool.execute(
+    `INSERT INTO users (username, password_hash, full_name, department, role_id)
+     VALUES (?, ?, ?, ?, ?)
+     ON DUPLICATE KEY UPDATE
+       password_hash = VALUES(password_hash),
+       full_name = VALUES(full_name),
+       department = VALUES(department),
+       role_id = VALUES(role_id)`,
+    ['admin', defaultPasswordHash, 'System Administrator', 'Administration', adminRoleId]
+  );
 }
 
 async function ensureDatabase() {
@@ -264,6 +292,7 @@ async function ensureTables() {
       username VARCHAR(100) NOT NULL,
       password_hash VARCHAR(255) NOT NULL,
       full_name VARCHAR(150) NOT NULL,
+      department VARCHAR(150) NULL,
       role_id INT UNSIGNED NOT NULL,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
@@ -276,10 +305,25 @@ async function ensureTables() {
   );
 }
 
+async function ensureDepartmentColumn() {
+  const [rows] = await pool.query<RowDataPacket[]>(
+    `SELECT COUNT(*) AS count
+     FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'department'`,
+    [dbName]
+  );
+
+  const count = Number((rows[0] as { count?: number }).count ?? 0);
+  if (count === 0) {
+    await pool.execute('ALTER TABLE users ADD COLUMN department VARCHAR(150) NULL');
+  }
+}
+
 async function startServer() {
   try {
     await ensureDatabase();
     await ensureTables();
+    await ensureDepartmentColumn();
     await seedDefaultAdmin();
 
     app.listen(port, () => {
