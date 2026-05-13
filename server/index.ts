@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import { createHash } from 'crypto';
 import { RowDataPacket } from 'mysql2';
+import mysql from 'mysql2/promise';
 import { pool } from './db';
 import { hashPassword, verifyPassword } from './password';
 
@@ -20,6 +21,7 @@ type UserRow = RowDataPacket & {
 
 const app = express();
 const port = Number(process.env.API_PORT ?? 4000);
+const dbName = process.env.DB_NAME ?? 'dhldac_incident_report';
 
 app.use(cors());
 app.use(express.json());
@@ -229,8 +231,55 @@ async function seedDefaultAdmin() {
   }
 }
 
+async function ensureDatabase() {
+  const connection = await mysql.createConnection({
+    host: process.env.DB_HOST ?? '127.0.0.1',
+    port: Number(process.env.DB_PORT ?? 3306),
+    user: process.env.DB_USER ?? 'root',
+    password: process.env.DB_PASSWORD ?? '',
+  });
+
+  await connection.query(
+    `CREATE DATABASE IF NOT EXISTS \`${dbName}\`
+      CHARACTER SET utf8mb4
+      COLLATE utf8mb4_unicode_ci`
+  );
+  await connection.end();
+}
+
+async function ensureTables() {
+  await pool.execute(
+    `CREATE TABLE IF NOT EXISTS roles (
+      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      role_name VARCHAR(50) NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_roles_role_name (role_name)
+    ) ENGINE=InnoDB;`
+  );
+
+  await pool.execute(
+    `CREATE TABLE IF NOT EXISTS users (
+      id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+      username VARCHAR(100) NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      full_name VARCHAR(150) NOT NULL,
+      role_id INT UNSIGNED NOT NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      PRIMARY KEY (id),
+      UNIQUE KEY uq_users_username (username),
+      CONSTRAINT fk_users_role_id
+        FOREIGN KEY (role_id) REFERENCES roles (id)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+    ) ENGINE=InnoDB;`
+  );
+}
+
 async function startServer() {
   try {
+    await ensureDatabase();
+    await ensureTables();
     await seedDefaultAdmin();
 
     app.listen(port, () => {

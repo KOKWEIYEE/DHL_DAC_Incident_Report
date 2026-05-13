@@ -6,10 +6,12 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
-  if (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$')) {
-    return bcrypt.compare(password, storedHash);
+  const normalizedStoredHash = storedHash.trim();
+
+  if (normalizedStoredHash.startsWith('$2a$') || normalizedStoredHash.startsWith('$2b$') || normalizedStoredHash.startsWith('$2y$')) {
+    return bcrypt.compare(password, normalizedStoredHash);
   }
 
   const sha256Hash = createHash('sha256').update(password).digest('hex');
-  return sha256Hash === storedHash;
+  return sha256Hash.toLowerCase() === normalizedStoredHash.toLowerCase();
 }

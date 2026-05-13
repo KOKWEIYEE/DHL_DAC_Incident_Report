@@ -1,8 +1,38 @@
 import React, { FormEvent, useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Lock, LogIn, ShieldCheck } from 'lucide-react';
-import { loginUser } from './authApi';
-import { AuthenticatedUser } from './authTypes';
+import { Lock, LogIn, ShieldCheck, User } from 'lucide-react';
+
+export interface AuthenticatedUser {
+  id: number;
+  username: string;
+  fullName: string;
+  roleId: number;
+  roleName: string;
+  createdAt: string;
+}
+
+async function loginUser(username: string, password: string): Promise<AuthenticatedUser> {
+  const response = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ username, password }),
+  });
+
+  const responseText = await response.text();
+  const payload = responseText ? (JSON.parse(responseText) as { user?: AuthenticatedUser; message?: string }) : {};
+
+  if (!response.ok) {
+    throw new Error(payload.message ?? `Unable to sign in (status ${response.status}).`);
+  }
+
+  if (!payload.user) {
+    throw new Error('Invalid login response from server.');
+  }
+
+  return payload.user;
+}
 
 interface LoginPageProps {
   onLogin: (user: AuthenticatedUser) => void;
@@ -69,7 +99,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
+                    <User className="h-5 w-5 text-gray-400" />
                   </div>
                   <input
                     id="username"
