@@ -302,7 +302,7 @@ app.get('/api/tickets/:id', async (req, res) => {
     id: c.id.toString(),
     author: c.full_name,
     authorEmail: `${c.username}@dhl.com`,
-    authorAvatar: `https://i.pravatar.cc/150?u=${c.username}`,
+    authorAvatar: '',
     text: c.text,
     timestamp: new Date(c.created_at).toLocaleString(),
     isInternal: Boolean(c.is_internal)
@@ -334,9 +334,10 @@ app.get('/api/tickets/:id', async (req, res) => {
       timeCreated: new Date(t.created_at).toLocaleString(),
       lastUpdated: new Date(t.updated_at).toLocaleString(),
       requester: t.requester_name,
-      requesterAvatar: `https://i.pravatar.cc/150?u=${t.requester_username}`,
+      requesterAvatar: '',
+      requesterEmail: `${t.requester_username}@dhl.com`,
       assignedTo: t.assignee_id ? {
-        avatar: `https://i.pravatar.cc/150?u=${t.assignee_username}`,
+        avatar: '',
         name: t.assignee_name,
         email: `${t.assignee_username}@dhl.com`,
         role: t.assignee_role

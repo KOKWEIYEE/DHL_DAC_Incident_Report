@@ -34,6 +34,18 @@ interface TicketDetailPageProps {
   onBack: () => void;
 }
 
+const Avatar = ({ src, alt, email, className }: { src: string; alt: string; email: string; className: string }) => {
+  if (!src) {
+    const initial = email ? email.charAt(0).toUpperCase() : alt ? alt.charAt(0).toUpperCase() : '?';
+    return (
+      <div className={`${className} bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold uppercase shrink-0`}>
+        {initial}
+      </div>
+    );
+  }
+  return <img src={src} alt={alt} className={`${className} shrink-0 object-cover`} />;
+};
+
 export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetailPageProps) {
   const {
     ticket,
@@ -59,6 +71,10 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
     handleCommand,
     handleSubmitComment,
     handleSave,
+    attachments,
+    handleFileUpload,
+    handleRemoveAttachment,
+    handlePaste,
     hasChanges
   } = useTicketDetail(ticketId, currentUser);
 
@@ -113,9 +129,10 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
             <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-4">Assignee</h3>
             <div className="flex items-center gap-3">
               <div className="relative">
-                <img 
+                <Avatar 
                   src={ticket.assignedTo.avatar} 
                   alt={ticket.assignedTo.name} 
+                  email={ticket.assignedTo.email}
                   className="w-12 h-12 rounded-full border-2 border-white shadow-sm"
                 />
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
@@ -242,7 +259,7 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                 animate={{ opacity: 1, y: 0 }}
                 className="flex gap-4 group"
               >
-                <img src={ticket.requesterAvatar} alt={ticket.requester} className="w-10 h-10 rounded-full shrink-0 shadow-sm" />
+                <Avatar src={ticket.requesterAvatar} alt={ticket.requester} email={ticket.requesterEmail || ''} className="w-10 h-10 rounded-full shadow-sm" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-2">
                     <div>
@@ -294,7 +311,7 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                     key={comment.id} 
                     className={`flex gap-4 group`}
                   >
-                    <img src={comment.authorAvatar} alt={comment.author} className="w-10 h-10 rounded-full shrink-0 shadow-sm" />
+                    <Avatar src={comment.authorAvatar} alt={comment.author} email={comment.authorEmail} className="w-10 h-10 rounded-full shadow-sm" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-2">
                         <div>
@@ -326,42 +343,16 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
 
                 <div className="flex flex-col flex-1">
                   <div className="flex items-center gap-1 px-8 py-2 border-b border-gray-100 bg-gray-50/50 overflow-x-auto whitespace-nowrap">
-                    <button 
-                      type="button" 
-                      onMouseDown={(e) => { e.preventDefault(); handleCommand('bold'); }} 
-                      className={`p-1.5 rounded transition-all ${activeFormats.bold ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}
-                    >
-                      <Bold size={16} strokeWidth={3} />
-                    </button>
-                    <button 
-                      type="button" 
-                      onMouseDown={(e) => { e.preventDefault(); handleCommand('italic'); }} 
-                      className={`p-1.5 rounded transition-all ${activeFormats.italic ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}
-                    >
-                      <Italic size={16} strokeWidth={3} />
-                    </button>
-                    <button 
-                      type="button" 
-                      onMouseDown={(e) => { e.preventDefault(); handleCommand('underline'); }} 
-                      className={`p-1.5 rounded transition-all ${activeFormats.underline ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}
-                    >
-                      <Underline size={16} strokeWidth={3} />
-                    </button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('bold'); }} className={`p-1.5 rounded transition-all ${activeFormats.bold ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Bold size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('italic'); }} className={`p-1.5 rounded transition-all ${activeFormats.italic ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Italic size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('underline'); }} className={`p-1.5 rounded transition-all ${activeFormats.underline ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Underline size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('strikeThrough'); }} className={`p-1.5 rounded transition-all ${activeFormats.strikeThrough ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Type size={16} strokeWidth={3} /></button>
                     <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
-                    <button 
-                      type="button" 
-                      onMouseDown={(e) => { e.preventDefault(); handleCommand('insertUnorderedList'); }} 
-                      className={`p-1.5 rounded transition-all ${activeFormats.unorderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}
-                    >
-                      <List size={16} strokeWidth={3} />
-                    </button>
-                    <button 
-                      type="button" 
-                      onMouseDown={(e) => { e.preventDefault(); handleCommand('insertOrderedList'); }} 
-                      className={`p-1.5 rounded transition-all ${activeFormats.orderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}
-                    >
-                      <ListOrdered size={16} strokeWidth={3} />
-                    </button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('quote'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Quote size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertUnorderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.unorderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><List size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertOrderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.orderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><ListOrdered size={16} strokeWidth={3} /></button>
+                    <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('createLink'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Link size={16} strokeWidth={3} /></button>
                   </div>
                   <div 
                     ref={editorRef}
@@ -370,17 +361,34 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                       setCommentText(e.currentTarget.innerHTML);
                       updateActiveFormats();
                     }}
+                    onPaste={handlePaste}
                     onKeyUp={updateActiveFormats}
                     onMouseUp={updateActiveFormats}
                     placeholder="Enter description here..."
                     className="w-full bg-white px-8 py-6 text-[15px] text-gray-800 resize-none outline-none min-h-[160px] max-h-[400px] overflow-y-auto empty:before:content-[attr(placeholder)] empty:before:text-gray-400 leading-relaxed active:border-0"
                   />
+                  {attachments.length > 0 && (
+                    <div className="px-8 py-4 border-t border-gray-100 flex flex-wrap gap-2">
+                      {attachments.map((file, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded text-[13px] text-gray-700 font-medium">
+                          <Paperclip size={14} />
+                          <span className="truncate max-w-[150px]">{file.name}</span>
+                          <button type="button" onClick={() => handleRemoveAttachment(i)} className="text-gray-400 hover:text-red-500 transition-colors">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 relative cursor-pointer hover:text-blue-600 transition-colors">
+                      <Paperclip size={16} className="text-gray-500" />
+                      <span className="text-xs font-medium text-gray-500">Attach files</span>
+                      <input type="file" multiple onChange={handleFileUpload} accept=".pdf,.docx,.doc,.txt,image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                     </div>
                     <button 
                       onClick={handleSubmitComment}
-                      disabled={!commentText.replace(/<[^>]*>/g, '').trim()}
+                      disabled={!commentText.replace(/<[^>]*>/g, '').trim() && attachments.length === 0}
                       className={`flex items-center gap-2 px-8 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-200`}
                     >
                       <Send size={14} />

@@ -19,6 +19,7 @@ export interface Ticket {
   id: string;
   requester: string;
   requesterAvatar: string;
+  requesterEmail: string;
   subject: string;
   description: string;
   department: string;
