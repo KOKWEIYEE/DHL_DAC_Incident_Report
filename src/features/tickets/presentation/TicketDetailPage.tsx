@@ -72,11 +72,14 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
     handleSubmitComment,
     handleSave,
     attachments,
+    handleDeleteComment,
     handleFileUpload,
     handleRemoveAttachment,
     handlePaste,
     hasChanges
   } = useTicketDetail(ticketId, currentUser);
+
+  const isAdmin = currentUser.roleName.toLowerCase() === 'admin';
 
   if (isLoading) {
     return <div className="p-6 text-gray-500 flex h-full items-center justify-center">Loading ticket details...</div>;
@@ -324,6 +327,15 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                             <span className="text-[11px] text-gray-400 ml-2">{comment.timestamp}</span>
                           </div>
                         </div>
+                        {isAdmin && (
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="text-gray-400 hover:text-red-500 p-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity bg-white hover:bg-red-50 border border-transparent hover:border-red-100 shadow-sm"
+                            title="Delete Comment"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </div>
                       <div className="text-sm p-5 rounded-xl border bg-white border-gray-100 text-gray-700 shadow-sm"
                            dangerouslySetInnerHTML={{ __html: comment.text }}

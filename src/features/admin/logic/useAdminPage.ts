@@ -8,7 +8,7 @@ import { createAdminUser, deleteAdminUser, fetchAdminUsers } from '../data/admin
 import { AdminTab, AdminUser, CreateUserForm, SecuritySettings } from '../data/adminTypes';
 
 export function useAdminPage(currentUser?: AuthenticatedUser) {
-  const [activeTab, setActiveTab] = useState<AdminTab>('Create User');
+  const [activeTab, setActiveTab] = useState<AdminTab>('Tickets');
   const [formData, setFormData] = useState<CreateUserForm>(createDefaultCreateUserForm);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>(createInitialSecuritySettings);

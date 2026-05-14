@@ -54,3 +54,21 @@ export async function addTicketCommentApi(ticketId: string, text: string, isInte
     throw new Error('Failed to add comment');
   }
 }
+
+export async function deleteTicketApi(id: string, actorId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/tickets/${id}?actorId=${actorId}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete ticket');
+  }
+}
+
+export async function deleteCommentApi(ticketId: string, commentId: string, actorId: number): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/tickets/${ticketId}/comments/${commentId}?actorId=${actorId}`, {
+    method: 'DELETE'
+  });
+  if (!response.ok) {
+    throw new Error('Failed to delete comment');
+  }
+}

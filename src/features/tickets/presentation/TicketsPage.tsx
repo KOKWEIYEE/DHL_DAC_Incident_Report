@@ -1,13 +1,16 @@
 import React, { useEffect } from 'react';
 import { TicketTable } from '../components/TicketTable';
 import { useTickets } from '../logic/useTickets';
+import { AuthenticatedUser } from '../../auth/authTypes';
+import { deleteTicketApi } from '../data/ticketApi';
 
 interface TicketsPageProps {
   refreshTrigger?: number;
   onTicketClick?: (ticketId: string) => void;
+  currentUser?: AuthenticatedUser;
 }
 
-export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, onTicketClick }) => {
+export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, onTicketClick, currentUser }) => {
   const {
     tickets,
     isLoading,
@@ -84,7 +87,23 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, on
         </div>
       </div>
 
-      <TicketTable tickets={tickets} onTicketClick={onTicketClick} />
+      <TicketTable 
+        tickets={tickets} 
+        onTicketClick={onTicketClick} 
+        isAdmin={currentUser?.roleName?.toLowerCase() === 'admin'}
+        onDeleteTicket={async (id) => {
+          if (window.confirm(`Are you sure you want to delete ticket #${id}?`)) {
+            try {
+              if (currentUser) {
+                await deleteTicketApi(id, currentUser.id);
+                refreshTickets();
+              }
+            } catch (err: any) {
+              alert('Failed to delete ticket: ' + err.message);
+            }
+          }
+        }}
+      />
     </div>
   );
 };

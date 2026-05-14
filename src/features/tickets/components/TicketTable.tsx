@@ -1,13 +1,16 @@
 import React from 'react';
 import { StatusBadge, PriorityBadge } from './Badges';
 import { Ticket } from '../../../types';
+import { Trash2 } from 'lucide-react';
 
 interface TicketTableProps {
   tickets: Ticket[];
   onTicketClick?: (ticketId: string) => void;
+  isAdmin?: boolean;
+  onDeleteTicket?: (ticketId: string) => void;
 }
 
-export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick }) => {
+export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick, isAdmin, onDeleteTicket }) => {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col overflow-hidden">
       <div className="overflow-x-auto">
@@ -27,7 +30,7 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick
             {tickets.map((ticket) => (
               <tr 
                 key={ticket.id} 
-                className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group"
                 onClick={() => onTicketClick && onTicketClick(ticket.id)}
               >
                 <td className="py-3 px-4">
@@ -48,8 +51,20 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick
                 <td className="py-3 px-4 text-sm text-slate-800">
                   {ticket.timeCreated}
                 </td>
-                <td className="py-3 px-4 text-sm text-slate-800">
-                  {ticket.lastUpdated}
+                <td className="py-3 px-4 text-sm text-slate-800 flex items-center justify-between">
+                  <span>{ticket.lastUpdated}</span>
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onDeleteTicket) onDeleteTicket(ticket.id);
+                      }}
+                      className="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                      title="Delete Ticket"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

@@ -111,14 +111,39 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     }
   };
 
+  const getBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = error => reject(error);
+    });
+  };
+
   const handleSubmitComment = async () => {
     const cleanText = commentText.replace(/<[^>]*>/g, '').trim();
     if ((!cleanText && attachments.length === 0) || !ticket) return;
     
     let finalText = commentText;
     if (attachments.length > 0) {
-      const attachmentNames = attachments.map(f => f.name).join(', ');
-      finalText += `<br/><br/><div style="color: #64748b; font-size: 12px; padding: 8px; background: #f8fafc; border-radius: 4px;"><strong>Attachments:</strong> ${attachmentNames}</div>`;
+      let attachmentsHtml = `<div style="margin-top: 16px; display: flex; flex-direction: column; gap: 12px;">`;
+      for (const file of attachments) {
+        try {
+          const base64 = await getBase64(file);
+          if (file.type.startsWith('image/')) {
+            attachmentsHtml += `<div style="max-width: 100%; display: inline-block;"><img src="${base64}" alt="${file.name}" style="max-width: 100%; max-height: 400px; height: auto; border-radius: 8px; border: 1px solid #e2e8f0; resize: both; overflow: hidden; display: block;" /></div>`;
+          } else {
+            attachmentsHtml += `<div style="padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; display: flex; align-items: center; gap: 8px;">
+              <span style="font-weight: 600; color: #334155; font-size: 13px;">📄 ${file.name}</span>
+              <a href="${base64}" download="${file.name}" target="_blank" style="margin-left: auto; color: #2563eb; font-size: 12px; font-weight: bold; text-decoration: none; padding: 6px 12px; background: #dbeafe; border-radius: 4px; transition: background 0.2s;">Open / Download</a>
+            </div>`;
+          }
+        } catch (e) {
+          console.error("Failed to read file", file, e);
+        }
+      }
+      attachmentsHtml += `</div>`;
+      finalText += attachmentsHtml;
     }
     
     try {
@@ -132,6 +157,18 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
       await loadTicket(); // Refresh to show new comment
     } catch (err: any) {
       alert(`Error adding comment: ${err.message}`);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    if (window.confirm('Are you sure you want to delete this comment?')) {
+      try {
+        const { deleteCommentApi } = await import('../data/ticketApi');
+        await deleteCommentApi(ticketId, commentId, currentUser.id);
+        await loadTicket();
+      } catch (err: any) {
+        alert('Failed to delete comment: ' + err.message);
+      }
     }
   };
 
@@ -203,6 +240,7 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     handleFileUpload,
     handleRemoveAttachment,
     handlePaste,
+    handleDeleteComment,
     hasChanges: ticket ? (
       currentStatus !== ticket.status || 
       currentPriority !== ticket.priority || 

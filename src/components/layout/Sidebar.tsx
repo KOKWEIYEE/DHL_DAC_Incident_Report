@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { LayoutDashboard, Users, BarChart3, Settings, ClipboardList, ChevronDown, ChevronUp, Timer, IdCard, UserX, FileText, RotateCcw, FolderOpen, Folder } from 'lucide-react';
 
-export const Sidebar: React.FC = () => {
+interface SidebarProps {
+  onTicketsClick?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick }) => {
   const [isTicketsOpen, setIsTicketsOpen] = useState(true);
 
   return (
@@ -22,7 +26,10 @@ export const Sidebar: React.FC = () => {
         {/* Tickets Accordion */}
         <div>
           <button 
-            onClick={() => setIsTicketsOpen(!isTicketsOpen)}
+            onClick={() => {
+              setIsTicketsOpen(!isTicketsOpen);
+              if (onTicketsClick) onTicketsClick();
+            }}
             className={`w-full flex items-center justify-between px-6 py-3 transition-colors border-l-4 cursor-pointer ${isTicketsOpen ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white border-transparent'}`}
           >
             <div className="flex items-center gap-3">

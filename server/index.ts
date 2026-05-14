@@ -25,7 +25,8 @@ const port = Number(process.env.API_PORT ?? 4000);
 const dbName = process.env.DB_NAME ?? 'dhldac_incident_report';
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
@@ -243,6 +244,7 @@ app.get('/api/tickets', async (_req, res) => {
      LEFT JOIN users u1 ON t.requester_id = u1.id
      LEFT JOIN users u2 ON t.assignee_id = u2.id
      LEFT JOIN roles r2 ON u2.role_id = r2.id
+     WHERE t.status != 'Deleted'
      ORDER BY t.created_at DESC`
   );
 
@@ -436,6 +438,33 @@ app.post('/api/tickets/:id/comments', async (req, res) => {
   res.status(201).json({ message: 'Comment added successfully.' });
 });
 
+app.delete('/api/tickets/:id', async (req, res) => {
+  const ticketId = Number(req.params.id);
+  const actorId = Number(req.query.actorId);
+  if (!Number.isInteger(ticketId)) return res.status(400).json({ message: 'Invalid ticket id.' });
+  
+  await pool.execute("UPDATE tickets SET status = 'Deleted', updated_at = CURRENT_TIMESTAMP WHERE id = ?", [ticketId]);
+  if (actorId && !isNaN(actorId)) {
+    await pool.execute('INSERT INTO ticket_history (ticket_id, actor_id, action) VALUES (?, ?, ?)', [ticketId, actorId, 'Ticket deleted']);
+  }
+  res.json({ message: 'Ticket deleted successfully.' });
+});
+
+app.delete('/api/tickets/:id/comments/:commentId', async (req, res) => {
+  const ticketId = Number(req.params.id);
+  const commentId = Number(req.params.commentId);
+  const actorId = Number(req.query.actorId);
+  if (!Number.isInteger(ticketId) || !Number.isInteger(commentId)) {
+    return res.status(400).json({ message: 'Invalid id.' });
+  }
+  
+  await pool.execute('DELETE FROM ticket_comments WHERE id = ? AND ticket_id = ?', [commentId, ticketId]);
+  if (actorId && !isNaN(actorId)) {
+    await pool.execute('INSERT INTO ticket_history (ticket_id, actor_id, action) VALUES (?, ?, ?)', [ticketId, actorId, 'Comment deleted']);
+  }
+  res.json({ message: 'Comment deleted successfully.' });
+});
+
 async function seedDefaultAdmin() {
   await pool.execute(
     'INSERT INTO roles (role_name) VALUES (?) ON DUPLICATE KEY UPDATE role_name = VALUES(role_name)',
@@ -555,7 +584,7 @@ async function ensureTicketsTables() {
       id INT UNSIGNED NOT NULL AUTO_INCREMENT,
       ticket_id INT UNSIGNED NOT NULL,
       author_id INT UNSIGNED NOT NULL,
-      text TEXT NOT NULL,
+      text LONGTEXT NOT NULL,
       is_internal BOOLEAN NOT NULL DEFAULT FALSE,
       created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
@@ -563,6 +592,9 @@ async function ensureTicketsTables() {
       CONSTRAINT fk_comments_author FOREIGN KEY (author_id) REFERENCES users (id) ON DELETE CASCADE
     ) ENGINE=InnoDB;`
   );
+
+  await pool.execute('ALTER TABLE ticket_comments MODIFY text LONGTEXT NOT NULL').catch(() => {});
+  await pool.execute('ALTER TABLE tickets MODIFY description LONGTEXT NOT NULL').catch(() => {});
 
   await pool.execute(
     `CREATE TABLE IF NOT EXISTS ticket_history (
