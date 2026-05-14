@@ -4,7 +4,7 @@ import {
   createDefaultCreateUserForm,
   createInitialSecuritySettings,
 } from '../data/adminData';
-import { createAdminUser, deleteAdminUser, fetchAdminUsers } from '../data/adminApi';
+import { createAdminUser, deleteAdminUser, fetchAdminUsers, updateAdminUser } from '../data/adminApi';
 import { AdminTab, AdminUser, CreateUserForm, SecuritySettings } from '../data/adminTypes';
 
 export function useAdminPage(currentUser?: AuthenticatedUser) {
@@ -13,6 +13,7 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>(createInitialSecuritySettings);
   const [createSuccess, setCreateSuccess] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
   const [securitySaved, setSecuritySaved] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('All');
@@ -79,15 +80,32 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
 
   async function handleCreateUser(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setCreateError(null);
+    setCreateSuccess(false);
 
-    await createAdminUser(formData);
-    await loadUsers();
-    setCreateSuccess(true);
-    setFormData(createDefaultCreateUserForm());
+    // Password validation: min 8 chars and at least 1 special char
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (formData.password.length < 8) {
+      setCreateError('Password must be at least 8 characters long.');
+      return;
+    }
+    if (!specialCharRegex.test(formData.password)) {
+      setCreateError('Password must contain at least one special character (!@#$%^&* etc.).');
+      return;
+    }
 
-    window.setTimeout(() => {
-      setCreateSuccess(false);
-    }, 2500);
+    try {
+      await createAdminUser(formData);
+      await loadUsers();
+      setCreateSuccess(true);
+      setFormData(createDefaultCreateUserForm());
+
+      window.setTimeout(() => {
+        setCreateSuccess(false);
+      }, 2500);
+    } catch (err: any) {
+      setCreateError(err.message || 'Failed to create user');
+    }
   }
 
   async function handleToggleUserStatus(userId: number) {
@@ -125,6 +143,19 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
     }, 2500);
   }
 
+  async function handleUpdateUser(userId: number, field: 'roleName' | 'department', value: string) {
+    try {
+      await updateAdminUser(userId, { [field]: value });
+      await loadUsers();
+      setUserActionMessage(`User ${field === 'roleName' ? 'role' : 'department'} updated.`);
+      window.setTimeout(() => {
+        setUserActionMessage('');
+      }, 2500);
+    } catch (err: any) {
+      alert('Failed to update user: ' + err.message);
+    }
+  }
+
   function handleSecurityToggle(field: keyof Pick<SecuritySettings, 'mfaEnabled' | 'ipWhitelistEnabled' | 'auditLoggingEnabled'>) {
     setSecuritySettings((currentSettings) => ({
       ...currentSettings,
@@ -151,6 +182,7 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
   return {
     activeTab,
     createSuccess,
+    createError,
     formData,
     departmentFilter,
     handleCreateFieldChange,
@@ -161,6 +193,7 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
     handleSecurityToggle,
     handleTabClick,
     handleToggleUserStatus,
+    handleUpdateUser,
     searchTerm,
     isLoadingUsers,
     userActionMessage,

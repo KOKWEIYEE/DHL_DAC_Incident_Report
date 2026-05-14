@@ -41,9 +41,9 @@ export function useTickets(filterAssignedToUserId?: number) {
       
       let matchAssignment = true;
       if (assignmentFilter === 'assigned') {
-        matchAssignment = !!ticket.assignedTo.id;
+        matchAssignment = !!(ticket.assignedTo && ticket.assignedTo.id);
       } else if (assignmentFilter === 'unassigned') {
-        matchAssignment = !ticket.assignedTo.id;
+        matchAssignment = !(ticket.assignedTo && ticket.assignedTo.id);
       }
 
       return matchStatus && matchPriority && matchAssignee && matchDate && matchAssignment;

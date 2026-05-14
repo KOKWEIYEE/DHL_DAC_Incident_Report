@@ -20,6 +20,7 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Status</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Ticket ID</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Subject / Issue</th>
+              <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Department</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Assignee</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Priority</th>
               <th className="py-3 px-4 text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Time Created</th>
@@ -27,47 +28,58 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick
             </tr>
           </thead>
           <tbody>
-            {tickets.map((ticket) => (
-              <tr 
-                key={ticket.id} 
-                className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group"
-                onClick={() => onTicketClick && onTicketClick(ticket.id)}
-              >
-                <td className="py-3 px-4">
-                  <StatusBadge status={ticket.status} />
-                </td>
-                <td className="py-3 px-4 text-sm font-mono text-indigo-500 font-semibold">
-                  {ticket.id}
-                </td>
-                <td className="py-3 px-4 text-sm text-slate-800 max-w-[200px] truncate" title={ticket.subject}>
-                  {ticket.subject}
-                </td>
-                <td className="py-3 px-4 text-sm text-slate-800">
-                  {ticket.department}
-                </td>
-                <td className="py-3 px-4">
-                  <PriorityBadge priority={ticket.priority} />
-                </td>
-                <td className="py-3 px-4 text-sm text-slate-800">
-                  {ticket.timeCreated}
-                </td>
-                <td className="py-3 px-4 text-sm text-slate-800 flex items-center justify-between">
-                  <span>{ticket.lastUpdated}</span>
-                  {isAdmin && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (onDeleteTicket) onDeleteTicket(ticket.id);
-                      }}
-                      className="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title="Delete Ticket"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
+            {tickets.length > 0 ? (
+              tickets.map((ticket) => (
+                <tr 
+                  key={ticket.id} 
+                  className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer group"
+                  onClick={() => onTicketClick && onTicketClick(ticket.id)}
+                >
+                  <td className="py-3 px-4">
+                    <StatusBadge status={ticket.status} />
+                  </td>
+                  <td className="py-3 px-4 text-sm font-mono text-indigo-500 font-semibold">
+                    {ticket.id}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-slate-800 max-w-[200px] truncate" title={ticket.subject}>
+                    {ticket.subject}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-slate-600">
+                    {ticket.department}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-slate-800">
+                    {ticket.assignedTo?.name || <span className="text-gray-400 italic text-xs">Unassigned</span>}
+                  </td>
+                  <td className="py-3 px-4">
+                    <PriorityBadge priority={ticket.priority} />
+                  </td>
+                  <td className="py-3 px-4 text-sm text-slate-800">
+                    {ticket.timeCreated}
+                  </td>
+                  <td className="py-3 px-4 text-sm text-slate-800 flex items-center justify-between">
+                    <span>{ticket.lastUpdated}</span>
+                    {isAdmin && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (onDeleteTicket) onDeleteTicket(ticket.id);
+                        }}
+                        className="text-gray-400 hover:text-red-500 p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Delete Ticket"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={8} className="py-12 text-center text-sm text-slate-400 italic bg-white">
+                  No tickets found matching your criteria.
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

@@ -34,6 +34,17 @@ export function useUserSettings(currentUser: AuthenticatedUser) {
       return;
     }
 
+    // Password validation: min 8 chars and at least 1 special char
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (passwordForm.newPassword.length < 8) {
+      setError('New password must be at least 8 characters long.');
+      return;
+    }
+    if (!specialCharRegex.test(passwordForm.newPassword)) {
+      setError('New password must contain at least one special character (!@#$%^&* etc.).');
+      return;
+    }
+
     setIsUpdating(true);
     try {
       await changePasswordApi(currentUser.id, passwordForm);

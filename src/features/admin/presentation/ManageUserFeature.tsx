@@ -11,6 +11,7 @@ interface ManageUserFeatureProps {
   onDepartmentFilterChange: (value: string) => void;
   onToggleUserStatus: (userId: number) => void;
   onRemoveUser: (userId: number) => void | Promise<void>;
+  onUpdateUser: (userId: number, field: 'roleName' | 'department', value: string) => void;
 }
 
 export function ManageUserFeature({
@@ -22,6 +23,7 @@ export function ManageUserFeature({
   onDepartmentFilterChange,
   onToggleUserStatus,
   onRemoveUser,
+  onUpdateUser,
 }: ManageUserFeatureProps) {
   const filteredUsers = users.filter((user) => {
     const searchValue = searchTerm.trim().toLowerCase();
@@ -65,7 +67,7 @@ export function ManageUserFeature({
           >
             {departmentOptions.map((department) => (
               <option key={department} value={department}>
-                Department: {department}
+                {department}
               </option>
             ))}
           </select>
@@ -101,23 +103,46 @@ export function ManageUserFeature({
             <table className="min-w-full divide-y divide-gray-200 bg-white">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">User</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Role</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Status</th>
-                  <th className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Created</th>
-                  <th className="px-4 py-3 text-right text-[11px] font-bold uppercase tracking-wide text-gray-500">Actions</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">User</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Department</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Role</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Status</th>
+                  <th className="px-6 py-4 text-left text-[11px] font-bold uppercase tracking-wide text-gray-500">Created</th>
+                  <th className="px-6 py-4 text-right text-[11px] font-bold uppercase tracking-wide text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {filteredUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50/70 transition-colors">
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-5">
                       <div className="font-semibold text-gray-900">{user.fullName}</div>
                       <div className="text-xs text-gray-500">{user.username}</div>
-                      <div className="text-[11px] text-gray-400 mt-0.5">{user.department}</div>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-700">{user.roleName}</td>
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-5 text-sm text-gray-700">
+                      <select 
+                        value={user.department}
+                        onChange={(e) => onUpdateUser(user.id, 'department', e.target.value)}
+                        className="bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-indigo-500 outline-none text-sm py-1 transition-colors"
+                      >
+                        <option value="IT Services">IT Services</option>
+                        <option value="Operation">Operation</option>
+                        <option value="Customer Services">Customer Services</option>
+                        <option value="Human Resources">Human Resources</option>
+                        <option value="Sales">Sales</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-5 text-sm text-gray-700">
+                      <select 
+                        value={user.roleName}
+                        onChange={(e) => onUpdateUser(user.id, 'roleName', e.target.value)}
+                        className="bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-indigo-500 outline-none text-sm py-1 transition-colors"
+                      >
+                        <option value="member">Member</option>
+                        <option value="leader">Leader</option>
+                        <option value="manager">Manager</option>
+                      </select>
+                    </td>
+                    <td className="px-6 py-5">
                       <span
                         className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-semibold ${
                           user.status === 'Active' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
@@ -127,8 +152,8 @@ export function ManageUserFeature({
                         {user.status}
                       </span>
                     </td>
-                    <td className="px-4 py-4 text-sm text-gray-600">{user.createdAt}</td>
-                    <td className="px-4 py-4">
+                    <td className="px-6 py-5 text-sm text-gray-600">{user.createdAt}</td>
+                    <td className="px-6 py-5 text-right">
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"

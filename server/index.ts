@@ -412,9 +412,9 @@ app.get('/api/tickets/:id', async (req, res) => {
 });
 
 app.post('/api/tickets', async (req, res) => {
-  const { subject, description, department, requester_id, type = 'Incident', priority = 'Medium', status = 'Draft', tags = [] } = req.body;
-  if (!subject || !description || !department || !requester_id) {
-    return res.status(400).json({ message: 'Missing required fields.' });
+  const { subject, description, department, requester_id, type, priority, status, tags, assignee_id } = req.body;
+  if (!subject || !department || !requester_id) {
+      return res.status(400).json({ message: 'Subject, department and requester_id are required.' });
   }
 
   const [roleRows] = await pool.query<RowDataPacket[]>('SELECT r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?', [requester_id]);
@@ -422,9 +422,17 @@ app.post('/api/tickets', async (req, res) => {
       return res.status(403).json({ message: 'Only admins can create tickets.' });
   }
 
+  let finalDepartment = department;
+  if (assignee_id) {
+    const [uRows] = await pool.query<RowDataPacket[]>('SELECT department FROM users WHERE id = ?', [assignee_id]);
+    if (uRows[0] && uRows[0].department) {
+      finalDepartment = uRows[0].department;
+    }
+  }
+
   const [result] = await pool.execute(
-    'INSERT INTO tickets (subject, description, department, requester_id, type, priority, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [subject, description, department, requester_id, type, priority, status]
+    'INSERT INTO tickets (subject, description, department, requester_id, type, priority, status, assignee_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [subject, description, finalDepartment, requester_id, type || 'Incident', priority || 'Medium', status || 'Draft', assignee_id || null]
   );
   
   const insertId = (result as { insertId: number }).insertId;

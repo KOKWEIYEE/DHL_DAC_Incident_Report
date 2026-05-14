@@ -1,18 +1,31 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bold, Italic, Underline, Type, Quote, List as ListIcon, ListOrdered, Link, Eye, Paperclip, X } from 'lucide-react';
 import { Ticket } from '../../../types';
+import { fetchAdminUsers } from '../../admin/data/adminApi';
+import { AdminUser } from '../../admin/data/adminTypes';
 
 interface CreateTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) => void;
+  onCreate: (data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[]; assigneeId?: number | null }) => void;
 }
 
 export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate }) => {
   const [priority, setPriority] = useState('Medium');
-  const [subject, setSubject] = useState('Ticket with and image');
-  const [group, setGroup] = useState('IT Services');
+  const [subject, setSubject] = useState('');
+  const [group, setGroup] = useState('');
   const [type, setType] = useState('Issue');
+  const [assigneeId, setAssigneeId] = useState<number | null>(null);
+  const [availableUsers, setAvailableUsers] = useState<AdminUser[]>([]);
+
+  useEffect(() => {
+    if (isOpen) {
+      fetchAdminUsers().then(users => {
+        setAvailableUsers(users.filter(u => u.roleName.toLowerCase() !== 'admin'));
+      }).catch(err => console.error('Failed to fetch users:', err));
+    }
+  }, [isOpen]);
+
   const [tags, setTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -64,15 +77,20 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
 
   const handleCreateTicket = (e: React.MouseEvent) => {
     e.preventDefault();
+    if (!group) {
+        alert('Department is mandatory.');
+        return;
+    }
     const description = editorRef.current?.innerHTML || subject;
     
     onCreate({
       subject: subject || 'New Request',
-      department: group || 'IT Services',
+      department: group,
       description,
       type,
       priority,
-      tags
+      tags,
+      assigneeId: assigneeId
     });
   };
 
@@ -91,19 +109,36 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
                 />
             </div>
             
-            <div className="mb-6">
-                <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Department</label>
-                <select 
-                className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 bg-transparent text-[15px]"
-                value={group} 
-                onChange={e=>setGroup(e.target.value)}
-                >
-                <option value="IT Services">IT Services</option>
-                <option value="Operation">Operation</option>
-                <option value="Customer Services">Customer Services</option>
-                <option value="Human Resources">Human Resources</option>
-                <option value="Sales">Sales</option>
-                </select>
+            <div className="flex flex-col sm:flex-row gap-6 mb-6">
+                <div className="flex-1">
+                    <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Department *</label>
+                    <select 
+                    className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 bg-transparent text-[15px]"
+                    value={group} 
+                    onChange={e=>setGroup(e.target.value)}
+                    required
+                    >
+                    <option value="">Select Department</option>
+                    <option value="IT Services">IT Services</option>
+                    <option value="Operation">Operation</option>
+                    <option value="Customer Services">Customer Services</option>
+                    <option value="Human Resources">Human Resources</option>
+                    <option value="Sales">Sales</option>
+                    </select>
+                </div>
+                <div className="flex-1">
+                    <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Assignee (Optional)</label>
+                    <select 
+                    className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 bg-transparent text-[15px]"
+                    value={assigneeId || ''} 
+                    onChange={e=>setAssigneeId(e.target.value ? Number(e.target.value) : null)}
+                    >
+                    <option value="">Unassigned</option>
+                    {availableUsers.map(user => (
+                        <option key={user.id} value={user.id}>{user.fullName}</option>
+                    ))}
+                    </select>
+                </div>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-6 mb-6">

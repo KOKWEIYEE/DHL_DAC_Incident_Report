@@ -13,12 +13,15 @@ export async function fetchTicketsApi(assignedToUserId?: number): Promise<Ticket
 }
 
 export async function createTicketApi(
-  ticketData: { subject: string; description: string; department: string; requester_id: number; type?: string; priority?: string; tags?: string[] }
+  ticketData: { subject: string; description: string; department: string; requester_id: number; type?: string; priority?: string; tags?: string[]; assignee_id?: number | null }
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/tickets`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(ticketData)
+    body: JSON.stringify({
+      ...ticketData,
+      assignee_id: ticketData.assignee_id // Ensure consistency with server naming
+    })
   });
   if (!response.ok) {
     throw new Error('Failed to create ticket');

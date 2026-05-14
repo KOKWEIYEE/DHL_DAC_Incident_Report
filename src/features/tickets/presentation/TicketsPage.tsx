@@ -50,19 +50,11 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({
     }
   }, [refreshTrigger]);
 
-  if (isLoading && tickets.length === 0) {
-    return <div className="p-6 text-gray-500">Loading tickets...</div>;
-  }
-
-  if (error) {
-    return <div className="p-6 text-red-500">Error: {error}</div>;
-  }
-
   return (
     <div className="flex-1 p-6 flex flex-col overflow-y-auto">
       {/* Filters & Actions Bar */}
       <div className="mb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex gap-3 flex-wrap">
+        <div className="flex gap-3 flex-wrap items-center">
           <select 
             value={statusFilter} 
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -104,26 +96,33 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({
             className="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] bg-white text-slate-600 outline-none focus:border-indigo-500"
             title="Filter by Date Created"
           />
+          {isLoading && <div className="ml-2 w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />}
         </div>
       </div>
 
-      <TicketTable 
-        tickets={tickets} 
-        onTicketClick={onTicketClick} 
-        isAdmin={currentUser?.roleName?.toLowerCase() === 'admin'}
-        onDeleteTicket={async (id) => {
-          if (window.confirm(`Are you sure you want to delete ticket #${id}?`)) {
-            try {
-              if (currentUser) {
-                await deleteTicketApi(id, currentUser.id);
-                refreshTickets();
+      {error ? (
+        <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-600 text-sm">
+          Error: {error}
+        </div>
+      ) : (
+        <TicketTable 
+          tickets={tickets} 
+          onTicketClick={onTicketClick} 
+          isAdmin={currentUser?.roleName?.toLowerCase() === 'admin'}
+          onDeleteTicket={async (id) => {
+            if (window.confirm(`Are you sure you want to delete ticket #${id}?`)) {
+              try {
+                if (currentUser) {
+                  await deleteTicketApi(id, currentUser.id);
+                  refreshTickets();
+                }
+              } catch (err: any) {
+                alert('Failed to delete ticket: ' + err.message);
               }
-            } catch (err: any) {
-              alert('Failed to delete ticket: ' + err.message);
             }
-          }
-        }}
-      />
+          }}
+        />
+      )}
     </div>
   );
 };

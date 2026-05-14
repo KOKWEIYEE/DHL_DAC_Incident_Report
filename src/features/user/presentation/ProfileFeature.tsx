@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Camera, Mail, Building, ShieldCheck } from 'lucide-react';
+import { User, Mail, Building, ShieldCheck, CheckCircle2, Camera } from 'lucide-react';
 import { AuthenticatedUser } from '../../auth/authTypes';
 
 interface ProfileFeatureProps {
@@ -27,37 +27,26 @@ export const ProfileFeature: React.FC<ProfileFeatureProps> = ({ currentUser, onA
       </div>
 
       <div className="flex flex-col divide-y divide-gray-100">
-        {/* Profile Picture Row */}
-        <div className="grid grid-cols-[220px_1fr] items-center px-8 py-4 hover:bg-gray-50/50 transition-colors">
-          <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
-            <Camera size={14} />
-            Avatar
-          </label>
-          <div className="flex items-center gap-4">
-            <div className="relative inline-block">
-              {currentUser.avatar ? (
-                <img 
-                  src={currentUser.avatar} 
-                  alt={currentUser.fullName} 
-                  className="w-16 h-16 rounded-xl border-2 border-white shadow-sm object-cover bg-white"
-                />
-              ) : (
-                <div className="w-16 h-16 rounded-xl border-2 border-white shadow-sm bg-indigo-50 flex items-center justify-center text-xl font-bold text-indigo-600">
-                  {getInitial()}
-                </div>
-              )}
-              <label className="absolute -bottom-1 -right-1 p-1 bg-white rounded-lg shadow-md border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
-                <Camera size={10} className="text-gray-600" />
-                <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isUpdating} />
-              </label>
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-900">{currentUser.fullName}</p>
-              <p className="text-[11px] text-gray-500 uppercase font-semibold tracking-wider">{currentUser.roleName}</p>
-            </div>
+        {/* Profile Picture Row (All along to the left) */}
+        <div className="px-8 py-6 hover:bg-gray-50/50 transition-colors">
+          <div className="relative inline-block">
+            {currentUser.avatar ? (
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.fullName} 
+                className="w-16 h-16 rounded-xl border-2 border-white shadow-sm object-cover bg-white"
+              />
+            ) : (
+              <div className="w-16 h-16 rounded-xl border-2 border-white shadow-sm bg-indigo-50 flex items-center justify-center text-xl font-bold text-indigo-600">
+                {getInitial()}
+              </div>
+            )}
+            <label className="absolute -bottom-1 -right-1 p-1 bg-white rounded-lg shadow-md border border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors">
+              <Camera size={10} className="text-gray-600" />
+              <input type="file" className="hidden" accept="image/*" onChange={handleFileChange} disabled={isUpdating} />
+            </label>
           </div>
         </div>
-
         {/* Full Name Row */}
         <div className="grid grid-cols-[220px_1fr] items-center px-8 py-3 hover:bg-gray-50/50 transition-colors">
           <label className="text-xs font-semibold text-gray-600 flex items-center gap-2">
@@ -112,3 +101,5 @@ export const ProfileFeature: React.FC<ProfileFeatureProps> = ({ currentUser, onA
     </div>
   );
 };
+
+

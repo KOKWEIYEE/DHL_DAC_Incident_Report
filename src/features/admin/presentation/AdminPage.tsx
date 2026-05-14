@@ -26,6 +26,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
   const {
     activeTab,
     createSuccess,
+    createError,
     isLoadingUsers,
     formData,
     departmentFilter,
@@ -37,6 +38,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
     handleSecurityToggle,
     handleTabClick,
     handleToggleUserStatus,
+    handleUpdateUser,
     searchTerm,
     userActionMessage,
     securitySaved,
@@ -81,11 +83,12 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
     }
   };
 
-  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
+  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[]; assigneeId?: number | null }) {
     try {
       await createTicketApi({
         ...data,
-        requester_id: currentUser.id
+        requester_id: currentUser.id,
+        assignee_id: data.assigneeId
       });
       setRefreshTrigger(prev => prev + 1);
       setIsModalOpen(false);
@@ -155,7 +158,13 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <CreateUserFeature formData={formData} isSuccess={createSuccess} onFieldChange={handleCreateFieldChange} onSubmit={handleCreateUser} />
+                  <CreateUserFeature 
+                    formData={formData} 
+                    isSuccess={createSuccess} 
+                    error={createError}
+                    onFieldChange={handleCreateFieldChange} 
+                    onSubmit={handleCreateUser} 
+                  />
                 </motion.div>
               )}
 
@@ -176,6 +185,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                     onDepartmentFilterChange={setDepartmentFilter}
                     onToggleUserStatus={handleToggleUserStatus}
                     onRemoveUser={handleRemoveUser}
+                    onUpdateUser={handleUpdateUser}
                   />
                 </motion.div>
               )}

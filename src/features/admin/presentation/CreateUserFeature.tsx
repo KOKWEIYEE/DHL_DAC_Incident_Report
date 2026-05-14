@@ -1,15 +1,16 @@
 import { ChangeEvent, FormEvent } from 'react';
-import { CheckCircle2, Briefcase, Lock, Mail, ShieldCheck, User } from 'lucide-react';
+import { CheckCircle2, Briefcase, Lock, Mail, ShieldCheck, User, XCircle } from 'lucide-react';
 import { CreateUserForm } from '../data/adminTypes';
 
 interface CreateUserFeatureProps {
   formData: CreateUserForm;
   isSuccess: boolean;
+  error?: string | null;
   onFieldChange: (field: keyof CreateUserForm, value: string) => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }
 
-export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit }: CreateUserFeatureProps) {
+export function CreateUserFeature({ formData, isSuccess, error, onFieldChange, onSubmit }: CreateUserFeatureProps) {
   function handleFieldChange(field: keyof CreateUserForm) {
     return (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
       onFieldChange(field, event.target.value);
@@ -94,14 +95,17 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
               <ShieldCheck size={14} />
               System Role
             </label>
-            <input
-              type="text"
+            <select
               required
               value={formData.roleName}
               onChange={handleFieldChange('roleName')}
-              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900 placeholder:text-gray-300"
-              placeholder="e.g. user, agent, manager"
-            />
+              className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900"
+            >
+              <option value="">Select a role</option>
+              <option value="member">Member</option>
+              <option value="leader">Leader</option>
+              <option value="manager">Manager</option>
+            </select>
           </div>
         </div>
 
@@ -119,6 +123,13 @@ export function CreateUserFeature({ formData, isSuccess, onFieldChange, onSubmit
         <div className="mx-8 mb-8 mt-4 p-4 bg-green-50 border border-green-100 rounded-xl flex items-center gap-3 text-green-700">
           <CheckCircle2 size={20} />
           <span className="font-semibold text-sm">User account provisioned successfully. Credential email sent.</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="mx-8 mb-8 mt-4 p-4 bg-red-50 border border-red-100 rounded-xl flex items-center gap-3 text-red-700">
+          <XCircle size={20} />
+          <span className="font-semibold text-sm">{error}</span>
         </div>
       )}
     </div>

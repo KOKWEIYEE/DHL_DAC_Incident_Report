@@ -65,3 +65,19 @@ export async function deleteAdminUser(userId: number): Promise<void> {
     throw new Error(payload.message ?? 'Unable to delete user.');
   }
 }
+
+export async function updateAdminUser(userId: number, updates: { roleName?: string; department?: string }): Promise<void> {
+  const response = await fetch(`/api/users/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(updates),
+  });
+
+  const payload = (await response.json()) as { message?: string };
+
+  if (!response.ok) {
+    throw new Error(payload.message ?? 'Unable to update user.');
+  }
+}

@@ -17,9 +17,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
     <aside className="w-[240px] bg-slate-900 text-white flex flex-col shrink-0 overflow-y-auto hidden md:flex">
       <div className="p-6 flex items-center gap-3 border-b border-slate-800">
         <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center font-bold text-white shrink-0">
-          SD
+          DHL
         </div>
-        <div className="text-[18px] font-bold tracking-tight">SupportDesk</div>
+        <div className="text-[18px] font-bold tracking-tight">DHL Incident Report</div>
       </div>
       
       <nav className="flex-1 py-4 flex flex-col text-sm">
@@ -60,21 +60,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
                 <UserX size={16} />
                 Unassigned
               </a>
-              <a href="#" 
-                 onClick={(e) => { e.preventDefault(); onFilterChange?.('Closed'); }}
-                 className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
-                <Folder size={16} />
-                Closed
-              </a>
             </div>
           )}
         </div>
 
-        <a href="#" className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-2">
-          <BarChart3 size={18} />
-          Reports
-        </a>
-        <a href="#" onClick={(e) => { e.preventDefault(); if (onSettingsClick) onSettingsClick(); }} className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+        <a href="#" onClick={(e) => { e.preventDefault(); if (onSettingsClick) onSettingsClick(); }} className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-2">
           <Settings size={18} />
           Settings
         </a>

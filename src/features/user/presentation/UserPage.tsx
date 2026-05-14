@@ -20,11 +20,12 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'MyTickets' | 'AllTickets' | 'Settings'>('MyTickets');
 
-  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
+  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[]; assigneeId?: number | null }) {
     try {
       await createTicketApi({
         ...data,
-        requester_id: currentUser.id
+        requester_id: currentUser.id,
+        assignee_id: data.assigneeId
       });
       setRefreshTrigger(prev => prev + 1);
       setIsModalOpen(false);

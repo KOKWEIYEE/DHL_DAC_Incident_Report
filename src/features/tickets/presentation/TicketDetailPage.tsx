@@ -210,17 +210,17 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Avatar 
-                  src={ticket.assignedTo.avatar} 
-                  alt={ticket.assignedTo.name} 
-                  email={ticket.assignedTo.email}
+                  src={ticket.assignedTo?.avatar || ''} 
+                  alt={ticket.assignedTo?.name || 'Unassigned'} 
+                  email={ticket.assignedTo?.email || ''}
                   className="w-12 h-12 rounded-full border-2 border-white shadow-sm"
                 />
-                <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                {ticket.assignedTo?.id && <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">{ticket.assignedTo.name}</p>
-                <p className="text-[11px] text-gray-500 truncate">{ticket.assignedTo.email}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{ticket.assignedTo.role}</p>
+                <p className="text-sm font-semibold text-gray-900 truncate">{ticket.assignedTo?.name || 'Unassigned'}</p>
+                <p className="text-[11px] text-gray-500 truncate">{ticket.assignedTo?.email || '-'}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{ticket.assignedTo?.role || 'Pending Assignment'}</p>
               </div>
             </div>
           </section>
