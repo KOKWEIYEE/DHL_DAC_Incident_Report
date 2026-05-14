@@ -168,6 +168,7 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
     securitySettings,
     setDepartmentFilter,
     setSearchTerm,
+    setActiveTab,
     users,
     reloadUsers: loadUsers,
   };

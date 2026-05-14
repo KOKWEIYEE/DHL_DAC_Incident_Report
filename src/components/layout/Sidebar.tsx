@@ -3,9 +3,10 @@ import { LayoutDashboard, Users, BarChart3, Settings, ClipboardList, ChevronDown
 
 interface SidebarProps {
   onTicketsClick?: () => void;
+  onSettingsClick?: () => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick }) => {
   const [isTicketsOpen, setIsTicketsOpen] = useState(true);
 
   return (
@@ -76,7 +77,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick }) => {
           <BarChart3 size={18} />
           Reports
         </a>
-        <a href="#" className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+        <a href="#" onClick={(e) => { e.preventDefault(); if (onSettingsClick) onSettingsClick(); }} className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
           <Settings size={18} />
           Settings
         </a>

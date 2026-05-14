@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { LogOut, Shield, UserPlus, Users } from 'lucide-react';
 import { Sidebar } from '../../../components/layout/Sidebar';
@@ -37,15 +37,23 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
     securitySettings,
     setDepartmentFilter,
     setSearchTerm,
+    setActiveTab,
     users,
   } = useAdminPage(currentUser);
+
+  useEffect(() => {
+    setActiveTab('Tickets');
+  }, [setActiveTab]);
 
   const visibleUsers = users.filter((user) => user.roleName.toLowerCase() !== 'admin' && user.username !== 'admin');
   const departmentOptions = ['All', ...Array.from(new Set(visibleUsers.map((user) => user.department))).sort()];
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-gray-900">
-      <Sidebar onTicketsClick={() => setActiveTab('Tickets')} />
+      <Sidebar 
+        onTicketsClick={() => setActiveTab('Tickets')}
+        onSettingsClick={() => setActiveTab('Create User')}
+      />
 
       <main className="flex-1 flex flex-col min-w-0">
         <nav className="h-[64px] bg-white border-b border-gray-200 flex items-center justify-between px-6">
@@ -68,6 +76,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
 
         <div className="flex-1 overflow-y-auto">
           <div className="w-full px-6 py-4">
+            {activeTab !== 'Tickets' && (
             <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg mb-4 w-fit">
               {(['Create User', 'Manage User', 'Security'] as const).map((tab) => (
                 <button
@@ -81,11 +90,12 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                   {tab === 'Create User' && <UserPlus size={14} />}
                   {tab === 'Manage User' && <Users size={14} />}
                   {tab === 'Security' && <Shield size={14} />}
-                  {tab === 'Tickets' && <span className="mr-1">🎫</span>}
                   {tab}
                 </button>
               ))}
             </div>
+            )}
+            
 
             <AnimatePresence mode="wait">
               {activeTab === 'Create User' && (
