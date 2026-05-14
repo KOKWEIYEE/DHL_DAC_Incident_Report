@@ -4,10 +4,13 @@ import { LayoutDashboard, Users, BarChart3, Settings, ClipboardList, ChevronDown
 interface SidebarProps {
   onTicketsClick?: () => void;
   onSettingsClick?: () => void;
+  onDashboardClick?: () => void;
+  role?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick, onDashboardClick, role }) => {
   const [isTicketsOpen, setIsTicketsOpen] = useState(true);
+  const isAdmin = role?.toLowerCase() === 'admin';
 
   return (
     <aside className="w-[240px] bg-slate-900 text-white flex flex-col shrink-0 overflow-y-auto hidden md:flex">
@@ -19,9 +22,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
       </div>
       
       <nav className="flex-1 py-4 flex flex-col text-sm">
-        <a href="#" className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+        <a href="#" 
+           onClick={(e) => { e.preventDefault(); if (onDashboardClick) onDashboardClick(); }}
+           className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
           <LayoutDashboard size={18} />
-          Dashboard
+          {isAdmin ? 'Dashboard' : 'My Tickets'}
         </a>
 
         {/* Tickets Accordion */}

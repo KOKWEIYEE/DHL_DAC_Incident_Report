@@ -8,9 +8,10 @@ interface TicketsPageProps {
   refreshTrigger?: number;
   onTicketClick?: (ticketId: string) => void;
   currentUser?: AuthenticatedUser;
+  filterAssignedToUserId?: number;
 }
 
-export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, onTicketClick, currentUser }) => {
+export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, onTicketClick, currentUser, filterAssignedToUserId }) => {
   const {
     tickets,
     isLoading,
@@ -25,7 +26,7 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, on
     dateFilter,
     setDateFilter,
     refreshTickets
-  } = useTickets();
+  } = useTickets(filterAssignedToUserId);
 
   useEffect(() => {
     if (refreshTrigger > 0) {

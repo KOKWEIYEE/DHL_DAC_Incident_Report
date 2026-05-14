@@ -81,6 +81,7 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
   } = useTicketDetail(ticketId, currentUser);
 
   const isAdmin = currentUser.roleName.toLowerCase() === 'admin';
+  const canEdit = isAdmin || (ticket?.assignedTo?.id === currentUser.id && ticket?.assignedTo?.id !== undefined);
 
   if (isLoading) {
     return <div className="p-6 text-gray-500 flex h-full items-center justify-center">Loading ticket details...</div>;
@@ -112,16 +113,16 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
         </div>
 
         <div className="flex items-center gap-2">
-          { hasChanges ? (
+          { canEdit && hasChanges ? (
             <button 
               onClick={handleSave}
               className="px-4 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-md text-xs font-bold transition-colors shadow-sm"
             >
               Save Changes
             </button>
-          ) : (
+          ) : canEdit && !hasChanges ? (
             <span className="text-xs font-semibold text-gray-400 px-4 py-1.5">No changes</span>
-          )}
+          ) : null }
         </div>
       </header>
 
@@ -158,13 +159,14 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                   <select 
                     value={currentStatus}
                     onChange={(e) => setCurrentStatus(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors"
+                    disabled={!canEdit}
+                    className="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors disabled:opacity-70 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   >
                     {['Draft', 'Reviewed', 'Published', 'Closed'].map(s => (
                       <option key={s} value={s}>{s}</option>
                     ))}
                   </select>
-                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {canEdit && <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />}
                 </div>
               </div>
               <div>
@@ -173,13 +175,14 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                   <select 
                     value={currentType}
                     onChange={(e) => setCurrentType(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors"
+                    disabled={!canEdit}
+                    className="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors disabled:opacity-70 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   >
                     {['Task', 'Incident', 'Problem', 'Question'].map(t => (
                       <option key={t} value={t}>{t}</option>
                     ))}
                   </select>
-                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {canEdit && <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />}
                 </div>
               </div>
               <div>
@@ -188,13 +191,14 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                   <select 
                     value={currentPriority}
                     onChange={(e) => setCurrentPriority(e.target.value)}
-                    className="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors"
+                    disabled={!canEdit}
+                    className="w-full bg-white border border-gray-200 rounded px-2 py-1.5 text-xs text-gray-700 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer hover:border-blue-400 transition-colors disabled:opacity-70 disabled:bg-gray-50 disabled:cursor-not-allowed"
                   >
                     {['Low', 'Medium', 'High', 'Urgent', 'Critical'].map(p => (
                       <option key={p} value={p}>{p}</option>
                     ))}
                   </select>
-                  <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  {canEdit && <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />}
                 </div>
               </div>
             </div>
@@ -205,16 +209,18 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                 {currentTags.map(tag => (
                   <span key={tag} className="px-2 py-1 bg-blue-50 text-blue-600 text-[10px] font-medium rounded border border-blue-100 flex items-center gap-1 group">
                     {tag}
-                    <button 
-                      onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
-                      className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
-                    >
-                      <X size={10} />
-                    </button>
+                    {canEdit && (
+                      <button 
+                        onClick={() => setCurrentTags(currentTags.filter(t => t !== tag))}
+                        className="opacity-50 group-hover:opacity-100 hover:text-red-500 transition-opacity"
+                      >
+                        <X size={10} />
+                      </button>
+                    )}
                   </span>
                 ))}
               </div>
-              {currentTags.length < 3 && (
+              {canEdit && currentTags.length < 3 && (
                 <input
                   type="text"
                   value={newTagInput}
@@ -348,69 +354,71 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
             </div>
 
             {/* Combined Comment Editor - Integrated at the bottom across page */}
-            <div id="comment-editor" className="mt-auto shrink-0">
-              <div className="bg-white border-t border-gray-200 overflow-hidden flex flex-col shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                <div className="flex items-center gap-6 px-8 py-3 border-b border-gray-100">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Comment</span>
-                </div>
-
-                <div className="flex flex-col flex-1">
-                  <div className="flex items-center gap-1 px-8 py-2 border-b border-gray-100 bg-gray-50/50 overflow-x-auto whitespace-nowrap">
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('bold'); }} className={`p-1.5 rounded transition-all ${activeFormats.bold ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Bold size={16} strokeWidth={3} /></button>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('italic'); }} className={`p-1.5 rounded transition-all ${activeFormats.italic ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Italic size={16} strokeWidth={3} /></button>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('underline'); }} className={`p-1.5 rounded transition-all ${activeFormats.underline ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Underline size={16} strokeWidth={3} /></button>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('strikeThrough'); }} className={`p-1.5 rounded transition-all ${activeFormats.strikeThrough ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Type size={16} strokeWidth={3} /></button>
-                    <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('quote'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Quote size={16} strokeWidth={3} /></button>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertUnorderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.unorderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><List size={16} strokeWidth={3} /></button>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertOrderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.orderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><ListOrdered size={16} strokeWidth={3} /></button>
-                    <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
-                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('createLink'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Link size={16} strokeWidth={3} /></button>
+            {canEdit && (
+              <div id="comment-editor" className="mt-auto shrink-0">
+                <div className="bg-white border-t border-gray-200 overflow-hidden flex flex-col shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                  <div className="flex items-center gap-6 px-8 py-3 border-b border-gray-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Comment</span>
                   </div>
-                  <div 
-                    ref={editorRef}
-                    contentEditable
-                    onInput={(e) => {
-                      setCommentText(e.currentTarget.innerHTML);
-                      updateActiveFormats();
-                    }}
-                    onPaste={handlePaste}
-                    onKeyUp={updateActiveFormats}
-                    onMouseUp={updateActiveFormats}
-                    placeholder="Enter description here..."
-                    className="w-full bg-white px-8 py-6 text-[15px] text-gray-800 resize-none outline-none min-h-[160px] max-h-[400px] overflow-y-auto empty:before:content-[attr(placeholder)] empty:before:text-gray-400 leading-relaxed active:border-0"
-                  />
-                  {attachments.length > 0 && (
-                    <div className="px-8 py-4 border-t border-gray-100 flex flex-wrap gap-2">
-                      {attachments.map((file, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded text-[13px] text-gray-700 font-medium">
-                          <Paperclip size={14} />
-                          <span className="truncate max-w-[150px]">{file.name}</span>
-                          <button type="button" onClick={() => handleRemoveAttachment(i)} className="text-gray-400 hover:text-red-500 transition-colors">
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ))}
+
+                  <div className="flex flex-col flex-1">
+                    <div className="flex items-center gap-1 px-8 py-2 border-b border-gray-100 bg-gray-50/50 overflow-x-auto whitespace-nowrap">
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('bold'); }} className={`p-1.5 rounded transition-all ${activeFormats.bold ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Bold size={16} strokeWidth={3} /></button>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('italic'); }} className={`p-1.5 rounded transition-all ${activeFormats.italic ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Italic size={16} strokeWidth={3} /></button>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('underline'); }} className={`p-1.5 rounded transition-all ${activeFormats.underline ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Underline size={16} strokeWidth={3} /></button>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('strikeThrough'); }} className={`p-1.5 rounded transition-all ${activeFormats.strikeThrough ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Type size={16} strokeWidth={3} /></button>
+                      <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('quote'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Quote size={16} strokeWidth={3} /></button>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertUnorderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.unorderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><List size={16} strokeWidth={3} /></button>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertOrderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.orderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><ListOrdered size={16} strokeWidth={3} /></button>
+                      <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
+                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('createLink'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Link size={16} strokeWidth={3} /></button>
                     </div>
-                  )}
-                  <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3 relative cursor-pointer hover:text-blue-600 transition-colors">
-                      <Paperclip size={16} className="text-gray-500" />
-                      <span className="text-xs font-medium text-gray-500">Attach files</span>
-                      <input type="file" multiple onChange={handleFileUpload} accept=".pdf,.docx,.doc,.txt,image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                    <div 
+                      ref={editorRef}
+                      contentEditable
+                      onInput={(e) => {
+                        setCommentText(e.currentTarget.innerHTML);
+                        updateActiveFormats();
+                      }}
+                      onPaste={handlePaste}
+                      onKeyUp={updateActiveFormats}
+                      onMouseUp={updateActiveFormats}
+                      placeholder="Enter description here..."
+                      className="w-full bg-white px-8 py-6 text-[15px] text-gray-800 resize-none outline-none min-h-[160px] max-h-[400px] overflow-y-auto empty:before:content-[attr(placeholder)] empty:before:text-gray-400 leading-relaxed active:border-0"
+                    />
+                    {attachments.length > 0 && (
+                      <div className="px-8 py-4 border-t border-gray-100 flex flex-wrap gap-2">
+                        {attachments.map((file, i) => (
+                          <div key={i} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded text-[13px] text-gray-700 font-medium">
+                            <Paperclip size={14} />
+                            <span className="truncate max-w-[150px]">{file.name}</span>
+                            <button type="button" onClick={() => handleRemoveAttachment(i)} className="text-gray-400 hover:text-red-500 transition-colors">
+                              <X size={14} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3 relative cursor-pointer hover:text-blue-600 transition-colors">
+                        <Paperclip size={16} className="text-gray-500" />
+                        <span className="text-xs font-medium text-gray-500">Attach files</span>
+                        <input type="file" multiple onChange={handleFileUpload} accept=".pdf,.docx,.doc,.txt,image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
+                      </div>
+                      <button 
+                        onClick={handleSubmitComment}
+                        disabled={!commentText.replace(/<[^>]*>/g, '').trim() && attachments.length === 0}
+                        className={`flex items-center gap-2 px-8 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-200`}
+                      >
+                        <Send size={14} />
+                        Send Comment
+                      </button>
                     </div>
-                    <button 
-                      onClick={handleSubmitComment}
-                      disabled={!commentText.replace(/<[^>]*>/g, '').trim() && attachments.length === 0}
-                      className={`flex items-center gap-2 px-8 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-200`}
-                    >
-                      <Send size={14} />
-                      Send Comment
-                    </button>
                   </div>
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </main>
       </div>

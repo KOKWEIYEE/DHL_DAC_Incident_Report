@@ -15,93 +15,100 @@ export const UserSecurityFeature: React.FC<UserSecurityFeatureProps> = ({
   formData, onFieldChange, onSubmit, isUpdating, isSuccess, error 
 }) => {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8 max-w-2xl">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
-          <Shield size={24} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-gray-900">Security Settings</h2>
-          <p className="text-sm text-gray-500">Manage your password and account security</p>
-        </div>
-      </div>
-
-      <form onSubmit={onSubmit} className="space-y-6">
-        <div className="space-y-1">
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-            Current Password
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-            <input
-              type="password"
-              value={formData.currentPassword}
-              onChange={(e) => onFieldChange('currentPassword', e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
-              placeholder="••••••••"
-              required
-            />
+    <div className="bg-white overflow-hidden">
+      <div className="flex flex-col">
+        <div className="px-8 flex items-center gap-3 mb-4 pb-6 border-b border-gray-100">
+          <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600">
+            <Shield size={22} />
+          </div>
+          <div>
+            <h2 className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.1em] mb-1">Security Settings</h2>
+            <h3 className="text-lg font-bold text-gray-900 uppercase tracking-tight">Change Password</h3>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-1">
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              New Password
+        <form onSubmit={onSubmit} className="w-full">
+          {/* Current Password */}
+          <div className="grid grid-cols-[240px_1fr] items-center gap-4 py-3 px-8 border-b border-gray-100 group hover:bg-gray-50/50 transition-colors">
+            <label className="flex items-center gap-3 text-slate-600">
+              <Lock size={16} className="text-slate-400" />
+              <span className="text-[13px] font-medium uppercase tracking-wide">Current Password</span>
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="password"
+                value={formData.currentPassword}
+                onChange={(e) => onFieldChange('currentPassword', e.target.value)}
+                className="w-full max-w-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-[13px]"
+                placeholder="••••••••"
+                required
+              />
+            </div>
+          </div>
+
+          {/* New Password */}
+          <div className="grid grid-cols-[240px_1fr] items-center gap-4 py-3 px-8 border-b border-gray-100 group hover:bg-gray-50/50 transition-colors">
+            <label className="flex items-center gap-3 text-slate-600">
+              <Lock size={16} className="text-slate-400" />
+              <span className="text-[13px] font-medium uppercase tracking-wide">New Password</span>
+            </label>
+            <div className="relative">
               <input
                 type="password"
                 value={formData.newPassword}
                 onChange={(e) => onFieldChange('newPassword', e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                className="w-full max-w-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-[13px]"
                 placeholder="••••••••"
                 required
               />
             </div>
           </div>
 
-          <div className="space-y-1">
-            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-              Confirm New Password
+          {/* Confirm Password */}
+          <div className="grid grid-cols-[240px_1fr] items-center gap-4 py-3 px-8 border-b border-gray-100 group hover:bg-gray-50/50 transition-colors">
+            <label className="flex items-center gap-3 text-slate-600">
+              <Lock size={16} className="text-slate-400" />
+              <span className="text-[13px] font-medium uppercase tracking-wide">Confirm Password</span>
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="password"
                 value={formData.confirmPassword}
                 onChange={(e) => onFieldChange('confirmPassword', e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                className="w-full max-w-sm px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-[13px]"
                 placeholder="••••••••"
                 required
               />
             </div>
           </div>
-        </div>
 
-        {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm font-medium">
-            <AlertCircle size={16} />
-            {error}
+          <div className="px-8 py-6 flex flex-col gap-4">
+            {error && (
+              <div className="flex items-center gap-2 text-red-600 text-[13px] font-medium">
+                <AlertCircle size={14} />
+                {error}
+              </div>
+            )}
+
+            {isSuccess && (
+              <div className="flex items-center gap-2 text-emerald-600 text-[13px] font-medium">
+                <CheckCircle2 size={14} />
+                Password changed successfully!
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
+              <button
+                type="submit"
+                disabled={isUpdating}
+                className="px-10 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-md active:scale-95 disabled:bg-indigo-300 disabled:active:scale-100 uppercase tracking-wider text-[11px]"
+              >
+                {isUpdating ? 'Changing...' : 'Change Password'}
+              </button>
+            </div>
           </div>
-        )}
-
-        {isSuccess && (
-          <div className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-lg text-sm font-medium">
-            <CheckCircle2 size={16} />
-            Password changed successfully!
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={isUpdating}
-          className="w-full md:w-auto px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg transition-all shadow-md active:scale-95 disabled:bg-indigo-300 disabled:active:scale-100"
-        >
-          {isUpdating ? 'Changing Password...' : 'Update Password'}
-        </button>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

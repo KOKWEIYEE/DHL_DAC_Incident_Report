@@ -2,8 +2,9 @@ import { Ticket } from '../../../types';
 
 const API_BASE_URL = 'http://localhost:4000/api';
 
-export async function fetchTicketsApi(): Promise<Ticket[]> {
-  const response = await fetch(`${API_BASE_URL}/tickets`);
+export async function fetchTicketsApi(assignedToUserId?: number): Promise<Ticket[]> {
+  const url = assignedToUserId ? `${API_BASE_URL}/tickets?assignee_id=${assignedToUserId}` : `${API_BASE_URL}/tickets`;
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error('Failed to fetch tickets');
   }

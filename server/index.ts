@@ -210,7 +210,7 @@ app.post('/api/auth/login', async (req, res) => {
   }
 
   const [rows] = await pool.query<UserRow[]>(
-    `SELECT u.id, u.username, u.password_hash, u.full_name, u.role_id, r.role_name, u.created_at
+    `SELECT u.id, u.username, u.password_hash, u.full_name, u.department, u.role_id, r.role_name, u.avatar, u.created_at
      FROM users u
      INNER JOIN roles r ON r.id = u.role_id
      WHERE u.username = ?
@@ -229,6 +229,7 @@ app.post('/api/auth/login', async (req, res) => {
       id: user.id,
       username: user.username,
       fullName: user.full_name,
+      department: user.department,
       roleId: user.role_id,
       roleName: user.role_name,
       createdAt: user.created_at,
@@ -276,18 +277,28 @@ app.patch('/api/users/:id/password', async (req, res) => {
   res.json({ message: 'Password changed successfully.' });
 });
 
-app.get('/api/tickets', async (_req, res) => {
-  const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT t.*, 
+app.get('/api/tickets', async (req, res) => {
+  const assigneeId = req.query.assignee_id ? Number(req.query.assignee_id) : undefined;
+  
+  let query = `SELECT t.*, 
             u1.full_name as requester_name, u1.username as requester_username,
             u2.full_name as assignee_name, u2.username as assignee_username, r2.role_name as assignee_role
      FROM tickets t
      LEFT JOIN users u1 ON t.requester_id = u1.id
      LEFT JOIN users u2 ON t.assignee_id = u2.id
      LEFT JOIN roles r2 ON u2.role_id = r2.id
-     WHERE t.status != 'Deleted'
-     ORDER BY t.created_at DESC`
-  );
+     WHERE t.status != 'Deleted'`;
+     
+  const params: any[] = [];
+  
+  if (assigneeId !== undefined && !isNaN(assigneeId)) {
+      query += ` AND t.assignee_id = ?`;
+      params.push(assigneeId);
+  }
+  
+  query += ` ORDER BY t.created_at DESC`;
+
+  const [rows] = await pool.query<RowDataPacket[]>(query, params);
 
   const tickets = rows.map(t => ({
     id: t.id.toString(),
@@ -302,6 +313,7 @@ app.get('/api/tickets', async (_req, res) => {
     requester: t.requester_name,
     requesterAvatar: `https://i.pravatar.cc/150?u=${t.requester_username}`,
     assignedTo: t.assignee_id ? {
+      id: t.assignee_id,
       avatar: `https://i.pravatar.cc/150?u=${t.assignee_username}`,
       name: t.assignee_name,
       email: `${t.assignee_username}@dhl.com`,
@@ -380,11 +392,13 @@ app.get('/api/tickets/:id', async (req, res) => {
       requesterAvatar: '',
       requesterEmail: `${t.requester_username}@dhl.com`,
       assignedTo: t.assignee_id ? {
+        id: t.assignee_id,
         avatar: '',
         name: t.assignee_name,
         email: `${t.assignee_username}@dhl.com`,
         role: t.assignee_role
       } : {
+        id: null,
         avatar: '',
         name: 'Unassigned',
         email: '',
@@ -401,6 +415,11 @@ app.post('/api/tickets', async (req, res) => {
   const { subject, description, department, requester_id, type = 'Incident', priority = 'Medium', status = 'Draft', tags = [] } = req.body;
   if (!subject || !description || !department || !requester_id) {
     return res.status(400).json({ message: 'Missing required fields.' });
+  }
+
+  const [roleRows] = await pool.query<RowDataPacket[]>('SELECT r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?', [requester_id]);
+  if (!roleRows[0] || roleRows[0].role_name.toLowerCase() !== 'admin') {
+      return res.status(403).json({ message: 'Only admins can create tickets.' });
   }
 
   const [result] = await pool.execute(
@@ -431,6 +450,23 @@ app.patch('/api/tickets/:id', async (req, res) => {
   const ticketId = Number(req.params.id);
   const { status, priority, type, tags, assignee_id, history_action, actor_id } = req.body;
   if (!Number.isInteger(ticketId)) return res.status(400).json({ message: 'Invalid ticket id.' });
+
+  if (!actor_id) {
+      return res.status(400).json({ message: 'actor_id is required to edit.' });
+  }
+
+  const [roleRows] = await pool.query<RowDataPacket[]>('SELECT r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?', [actor_id]);
+  const isAdmin = roleRows[0]?.role_name.toLowerCase() === 'admin';
+
+  if (!isAdmin) {
+      const [ticketRows] = await pool.query<RowDataPacket[]>('SELECT assignee_id FROM tickets WHERE id = ?', [ticketId]);
+      if (!ticketRows[0] || ticketRows[0].assignee_id !== actor_id) {
+          return res.status(403).json({ message: 'Only assigned users or admins can edit this ticket.' });
+      }
+      if (assignee_id !== undefined && assignee_id !== ticketRows[0].assignee_id) {
+          return res.status(403).json({ message: 'Only admins can reassign tickets.' });
+      }
+  }
 
   const updates: string[] = [];
   const values: any[] = [];
@@ -467,6 +503,16 @@ app.post('/api/tickets/:id/comments', async (req, res) => {
   const { text, is_internal, author_id } = req.body;
   if (!Number.isInteger(ticketId) || !text || !author_id) {
     return res.status(400).json({ message: 'Invalid input.' });
+  }
+
+  const [roleRows] = await pool.query<RowDataPacket[]>('SELECT r.role_name FROM users u JOIN roles r ON u.role_id = r.id WHERE u.id = ?', [author_id]);
+  const isAdmin = roleRows[0]?.role_name.toLowerCase() === 'admin';
+
+  if (!isAdmin) {
+      const [ticketRows] = await pool.query<RowDataPacket[]>('SELECT assignee_id FROM tickets WHERE id = ?', [ticketId]);
+      if (!ticketRows[0] || ticketRows[0].assignee_id !== author_id) {
+          return res.status(403).json({ message: 'Only assigned users or admins can comment on this ticket.' });
+      }
   }
 
   await pool.execute(

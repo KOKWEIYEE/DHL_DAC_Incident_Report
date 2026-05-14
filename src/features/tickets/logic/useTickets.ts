@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Ticket } from '../../../types';
 import { fetchTicketsApi } from '../data/ticketApi';
 
-export function useTickets() {
+export function useTickets(filterAssignedToUserId?: number) {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +15,7 @@ export function useTickets() {
   const loadTickets = async () => {
     setIsLoading(true);
     try {
-      const data = await fetchTicketsApi();
+      const data = await fetchTicketsApi(filterAssignedToUserId);
       setTickets(data);
       setError(null);
     } catch (err: any) {
@@ -27,7 +27,7 @@ export function useTickets() {
 
   useEffect(() => {
     loadTickets();
-  }, []);
+  }, [filterAssignedToUserId]);
 
   const uniqueAssignees = Array.from(new Set(tickets.map(t => t.department).filter(Boolean)));
 

@@ -16,10 +16,9 @@ interface UserPageProps {
 export function UserPage({ currentUser, onLogout }: UserPageProps) {
   // Admin sidebar integration - ensure UserPage doesn't try to use onSettingsClick
   const _userOnlyPage = true;
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'Tickets' | 'Settings'>('Tickets');
+  const [activeTab, setActiveTab] = useState<'MyTickets' | 'AllTickets' | 'Settings'>('MyTickets');
 
   async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
     try {
@@ -36,21 +35,28 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
   }
 
   const handleTicketsNav = () => {
-    setActiveTab('Tickets');
+    setActiveTab('AllTickets');
+    setSelectedTicketId(null);
+  };
+
+  const handleDashboardNav = () => {
+    setActiveTab('MyTickets');
     setSelectedTicketId(null);
   };
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 font-sans text-gray-900">
       <Sidebar 
+        onDashboardClick={handleDashboardNav}
         onTicketsClick={handleTicketsNav} 
         onSettingsClick={() => setActiveTab('Settings')}
+        role={currentUser.roleName}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-3 shrink-0">
           <div className="text-sm font-semibold text-gray-700">
-            {activeTab === 'Tickets' ? 'User dashboard' : 'User settings'}
+            {activeTab === 'MyTickets' ? 'My Tickets' : activeTab === 'AllTickets' ? 'All Tickets' : 'User settings'}
           </div>
           <button
             type="button"
@@ -61,7 +67,7 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
           </button>
         </div>
 
-        {activeTab === 'Tickets' ? (
+        {activeTab === 'MyTickets' || activeTab === 'AllTickets' ? (
           selectedTicketId ? (
             <div className="flex-1 overflow-hidden">
               <TicketDetailPage 
@@ -75,20 +81,19 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
             </div>
           ) : (
             <>
-              <Header onCreateTicket={() => setIsModalOpen(true)} />
-              <TicketsPage refreshTrigger={refreshTrigger} onTicketClick={(id) => setSelectedTicketId(id)} />
+              {/* Header and Create Ticket removed for User */}
+              <TicketsPage 
+                refreshTrigger={refreshTrigger} 
+                onTicketClick={(id) => setSelectedTicketId(id)} 
+                currentUser={currentUser}
+                filterAssignedToUserId={activeTab === 'MyTickets' ? currentUser.id : undefined}
+              />
             </>
           )
         ) : (
           <UserSettingsPage currentUser={currentUser} />
         )}
       </main>
-
-      <CreateTicketModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onCreate={handleCreateTicket}
-      />
     </div>
   );
 }

@@ -4,5 +4,7 @@ export interface AuthenticatedUser {
   fullName: string;
   roleId: number;
   roleName: string;
+  department?: string;
+  avatar?: string;
   createdAt: string;
 }

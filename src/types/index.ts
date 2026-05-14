@@ -30,6 +30,7 @@ export interface Ticket {
   type: string;
   tags: string[];
   assignedTo: {
+    id?: number | null;
     avatar: string;
     name: string;
     email: string;

@@ -24,14 +24,14 @@ export const UserSettingsPage: React.FC<UserSettingsPageProps> = ({ currentUser 
   } = useUserSettings(currentUser);
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      <div className="w-full px-8 py-8">
-        <div className="mb-8">
+    <div className="flex-1 overflow-y-auto bg-white">
+      <div className="w-full">
+        <div className="px-8 pt-8 mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-1">Account Settings</h1>
-          <p className="text-gray-500">Manage your profile information and security preferences</p>
         </div>
 
-        <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg mb-8 w-fit">
+        <div className="px-8 mb-8">
+          <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg w-fit">
           <button
             onClick={() => handleTabClick('Profile')}
             className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all ${
