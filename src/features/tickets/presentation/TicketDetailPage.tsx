@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { 
   ArrowLeft, 
@@ -23,17 +23,12 @@ import {
   History,
   MessageSquare,
   ChevronDown,
-  Trash2
+  Trash2,
+  Search
 } from 'lucide-react';
 import { StatusBadge } from '../components/Badges';
 import { useTicketDetail } from '../logic/useTicketDetail';
 import { AuthenticatedUser } from '../../auth/authTypes';
-
-interface TicketDetailPageProps {
-  ticketId: string;
-  currentUser: AuthenticatedUser;
-  onBack: () => void;
-}
 
 const Avatar = ({ src, alt, email, className }: { src: string; alt: string; email: string; className: string }) => {
   if (!src) {
@@ -46,6 +41,12 @@ const Avatar = ({ src, alt, email, className }: { src: string; alt: string; emai
   }
   return <img src={src} alt={alt} className={`${className} shrink-0 object-cover`} />;
 };
+
+interface TicketDetailPageProps {
+  ticketId: string;
+  currentUser: AuthenticatedUser;
+  onBack: () => void;
+}
 
 export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetailPageProps) {
   const {
@@ -77,11 +78,31 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
     handleFileUpload,
     handleRemoveAttachment,
     handlePaste,
+    assigneeSearch,
+    setAssigneeSearch,
+    assigneeDeptFilter,
+    setAssigneeDeptFilter,
+    handleAssign,
+    filteredUsers,
+    uniqueDepartments,
+    isAssigning,
     hasChanges
   } = useTicketDetail(ticketId, currentUser);
 
   const isAdmin = currentUser.roleName.toLowerCase() === 'admin';
-  const canEdit = isAdmin || (ticket?.assignedTo?.id === currentUser.id && ticket?.assignedTo?.id !== undefined);
+  const canEdit = isAdmin;
+
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setAssigneeSearch('');
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   if (isLoading) {
     return <div className="p-6 text-gray-500 flex h-full items-center justify-center">Loading ticket details...</div>;
@@ -107,8 +128,62 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
             <ArrowLeft size={18} />
           </button>
           <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold text-gray-900">Ticket #{ticket.id}</h1>
+            <h1 className="text-xl font-semibold text-gray-900 shrink-0">Ticket #{ticket.id}</h1>
             <StatusBadge status={currentStatus} />
+            
+            {isAdmin && (
+              <div ref={searchContainerRef} className="flex items-center gap-2 ml-4 relative">
+                <div className="relative">
+                  <div className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Search size={14} />
+                  </div>
+                  <input
+                    type="text"
+                    value={assigneeSearch}
+                    onChange={(e) => setAssigneeSearch(e.target.value)}
+                    placeholder="Search assignee..."
+                    className="pl-8 pr-3 py-1.5 bg-gray-50 border border-gray-200 rounded text-xs w-48 focus:ring-1 focus:ring-blue-500 outline-none"
+                  />
+                  
+                  {assigneeSearch && (
+                    <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded shadow-lg z-50 max-h-60 overflow-y-auto">
+                      {filteredUsers.length > 0 ? (
+                        filteredUsers.map(u => (
+                          <button
+                            key={u.id}
+                            onClick={() => handleAssign(u.id, u.fullName)}
+                            disabled={isAssigning}
+                            className="w-full px-3 py-2 text-left hover:bg-gray-50 transition-colors flex items-center gap-2 border-b border-gray-50 last:border-0"
+                          >
+                            <Avatar src={u.avatar} alt={u.fullName} email={u.username} className="w-6 h-6 rounded-full" />
+                            <div className="min-w-0">
+                              <p className="text-[11px] font-bold text-gray-900 truncate">{u.fullName}</p>
+                              <p className="text-[9px] text-gray-500 truncate">{u.department}</p>
+                            </div>
+                          </button>
+                        ))
+                      ) : (
+                        <div className="p-3 text-center text-xs text-gray-500">No users found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="relative">
+                  <select
+                    value={assigneeDeptFilter}
+                    onChange={(e) => setAssigneeDeptFilter(e.target.value)}
+                    className="pl-2 pr-6 py-1.5 bg-gray-50 border border-gray-200 rounded text-[10px] font-bold uppercase tracking-wider text-gray-600 appearance-none outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                  >
+                    <option value="All">All Dept</option>
+                    {uniqueDepartments.map(dept => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                  <ChevronDown size={10} className="absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -354,7 +429,7 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
             </div>
 
             {/* Combined Comment Editor - Integrated at the bottom across page */}
-            {canEdit && (
+            {isAdmin && (
               <div id="comment-editor" className="mt-auto shrink-0">
                 <div className="bg-white border-t border-gray-200 overflow-hidden flex flex-col shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
                   <div className="flex items-center gap-6 px-8 py-3 border-b border-gray-100">

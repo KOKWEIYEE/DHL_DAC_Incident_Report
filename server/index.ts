@@ -459,13 +459,7 @@ app.patch('/api/tickets/:id', async (req, res) => {
   const isAdmin = roleRows[0]?.role_name.toLowerCase() === 'admin';
 
   if (!isAdmin) {
-      const [ticketRows] = await pool.query<RowDataPacket[]>('SELECT assignee_id FROM tickets WHERE id = ?', [ticketId]);
-      if (!ticketRows[0] || ticketRows[0].assignee_id !== actor_id) {
-          return res.status(403).json({ message: 'Only assigned users or admins can edit this ticket.' });
-      }
-      if (assignee_id !== undefined && assignee_id !== ticketRows[0].assignee_id) {
-          return res.status(403).json({ message: 'Only admins can reassign tickets.' });
-      }
+      return res.status(403).json({ message: 'Only admins can edit this ticket.' });
   }
 
   const updates: string[] = [];
@@ -474,7 +468,18 @@ app.patch('/api/tickets/:id', async (req, res) => {
   if (status !== undefined) { updates.push('status = ?'); values.push(status); }
   if (priority !== undefined) { updates.push('priority = ?'); values.push(priority); }
   if (type !== undefined) { updates.push('type = ?'); values.push(type); }
-  if (assignee_id !== undefined) { updates.push('assignee_id = ?'); values.push(assignee_id); }
+  if (assignee_id !== undefined) { 
+    updates.push('assignee_id = ?'); 
+    values.push(assignee_id);
+    
+    if (assignee_id !== null) {
+      const [uRows] = await pool.query<RowDataPacket[]>('SELECT department FROM users WHERE id = ?', [assignee_id]);
+      if (uRows[0] && uRows[0].department) {
+        updates.push('department = ?');
+        values.push(uRows[0].department);
+      }
+    }
+  }
 
   if (updates.length > 0) {
     values.push(ticketId);
@@ -509,10 +514,7 @@ app.post('/api/tickets/:id/comments', async (req, res) => {
   const isAdmin = roleRows[0]?.role_name.toLowerCase() === 'admin';
 
   if (!isAdmin) {
-      const [ticketRows] = await pool.query<RowDataPacket[]>('SELECT assignee_id FROM tickets WHERE id = ?', [ticketId]);
-      if (!ticketRows[0] || ticketRows[0].assignee_id !== author_id) {
-          return res.status(403).json({ message: 'Only assigned users or admins can comment on this ticket.' });
-      }
+      return res.status(403).json({ message: 'Only admins can comment on this ticket.' });
   }
 
   await pool.execute(

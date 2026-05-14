@@ -26,33 +26,30 @@ export const UserSettingsPage: React.FC<UserSettingsPageProps> = ({ currentUser 
   return (
     <div className="flex-1 overflow-y-auto bg-white">
       <div className="w-full">
-        <div className="px-8 pt-8 mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">Account Settings</h1>
-        </div>
-
-        <div className="px-8 mb-8">
+        <div className="px-8 mt-6 mb-8">
           <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg w-fit">
           <button
             onClick={() => handleTabClick('Profile')}
-            className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all ${
+            className={`flex items-center gap-2 px-6 py-1.5 rounded-md text-xs font-bold transition-all ${
               activeTab === 'Profile' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/80'
             }`}
           >
-            <User size={16} />
+            <User size={14} />
             Profile
           </button>
           <button
             onClick={() => handleTabClick('Security')}
-            className={`flex items-center gap-2 px-6 py-2 rounded-md text-sm font-bold transition-all ${
+            className={`flex items-center gap-2 px-6 py-1.5 rounded-md text-xs font-bold transition-all ${
               activeTab === 'Security' ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/80'
             }`}
           >
-            <Shield size={16} />
+            <Shield size={14} />
             Security
           </button>
         </div>
+      </div>
 
-        <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait">
           {activeTab === 'Profile' && (
             <motion.div
               key="profile"

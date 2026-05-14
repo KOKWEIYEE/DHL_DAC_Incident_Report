@@ -8,6 +8,11 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [users, setUsers] = useState<any[]>([]);
+  const [assigneeSearch, setAssigneeSearch] = useState('');
+  const [assigneeDeptFilter, setAssigneeDeptFilter] = useState('All');
+  const [isAssigning, setIsAssigning] = useState(false);
+
   const [commentText, setCommentText] = useState('');
   const [activeTab, setActiveTab] = useState<'Comments'>('Comments');
   
@@ -38,9 +43,50 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     }
   };
 
+  const loadUsers = async () => {
+    try {
+      const response = await fetch('/api/users');
+      if (response.ok) {
+        const data = await response.json();
+        setUsers(data.users || []);
+      }
+    } catch (e) {
+      console.error("Failed to load users", e);
+    }
+  };
+
   useEffect(() => {
     loadTicket();
+    if (currentUser.roleName.toLowerCase() === 'admin') {
+      loadUsers();
+    }
   }, [ticketId]);
+
+  const handleAssign = async (userId: number, userName: string) => {
+    if (!ticket) return;
+    setIsAssigning(true);
+    try {
+      await updateTicketApi(ticketId, { assignee_id: userId } as any, currentUser.id, `Ticket assigned to ${userName}`);
+      await loadTicket();
+      setAssigneeSearch('');
+    } catch (err: any) {
+      alert(`Error assigning ticket: ${err.message}`);
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const filteredUsers = users.filter(u => {
+    const isAdmin = u.roleName.toLowerCase() === 'admin';
+    if (isAdmin) return false;
+
+    const matchesSearch = u.fullName.toLowerCase().includes(assigneeSearch.toLowerCase()) || 
+                          u.username.toLowerCase().includes(assigneeSearch.toLowerCase());
+    const matchesDept = assigneeDeptFilter === 'All' || u.department === assigneeDeptFilter;
+    return matchesSearch && matchesDept;
+  });
+
+  const uniqueDepartments = Array.from(new Set(users.filter(u => u.roleName.toLowerCase() !== 'admin').map(u => u.department).filter(Boolean)));
 
   const updateActiveFormats = () => {
     setActiveFormats({
@@ -241,6 +287,14 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     handleRemoveAttachment,
     handlePaste,
     handleDeleteComment,
+    assigneeSearch,
+    setAssigneeSearch,
+    assigneeDeptFilter,
+    setAssigneeDeptFilter,
+    handleAssign,
+    filteredUsers,
+    uniqueDepartments,
+    isAssigning,
     hasChanges: ticket ? (
       currentStatus !== ticket.status || 
       currentPriority !== ticket.priority || 

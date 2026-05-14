@@ -9,9 +9,18 @@ interface TicketsPageProps {
   onTicketClick?: (ticketId: string) => void;
   currentUser?: AuthenticatedUser;
   filterAssignedToUserId?: number;
+  initialStatusFilter?: string;
+  initialAssignmentFilter?: string;
 }
 
-export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, onTicketClick, currentUser, filterAssignedToUserId }) => {
+export const TicketsPage: React.FC<TicketsPageProps> = ({ 
+  refreshTrigger = 0, 
+  onTicketClick, 
+  currentUser, 
+  filterAssignedToUserId,
+  initialStatusFilter = 'All',
+  initialAssignmentFilter = 'All'
+}) => {
   const {
     tickets,
     isLoading,
@@ -25,8 +34,15 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, on
     setAssigneeFilter,
     dateFilter,
     setDateFilter,
+    assignmentFilter,
+    setAssignmentFilter,
     refreshTickets
   } = useTickets(filterAssignedToUserId);
+
+  useEffect(() => {
+    if (initialStatusFilter) setStatusFilter(initialStatusFilter);
+    if (initialAssignmentFilter) setAssignmentFilter(initialAssignmentFilter);
+  }, [initialStatusFilter, initialAssignmentFilter]);
 
   useEffect(() => {
     if (refreshTrigger > 0) {
@@ -53,6 +69,9 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, on
             className="px-3 py-1.5 border border-gray-200 rounded-md text-[13px] bg-white text-slate-600 outline-none focus:border-indigo-500"
           >
             <option value="All">Status: All</option>
+            <option value="Open">Open</option>
+            <option value="Pending">Pending</option>
+            <option value="Closed">Closed</option>
             <option value="Draft">Draft</option>
             <option value="Reviewed">Reviewed</option>
             <option value="Published">Published</option>

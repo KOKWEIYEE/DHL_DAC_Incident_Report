@@ -34,14 +34,33 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
     }
   }
 
+  const [sidebarStatusFilter, setSidebarStatusFilter] = useState('All');
+  const [sidebarAssignmentFilter, setSidebarAssignmentFilter] = useState('All');
+
   const handleTicketsNav = () => {
     setActiveTab('AllTickets');
     setSelectedTicketId(null);
+    setSidebarStatusFilter('All');
+    setSidebarAssignmentFilter('All');
+  };
+
+  const handleFilterChange = (filter: string) => {
+    setActiveTab('AllTickets');
+    setSelectedTicketId(null);
+    if (filter === 'assigned' || filter === 'unassigned') {
+      setSidebarStatusFilter('All');
+      setSidebarAssignmentFilter(filter);
+    } else {
+      setSidebarStatusFilter(filter);
+      setSidebarAssignmentFilter('All');
+    }
   };
 
   const handleDashboardNav = () => {
     setActiveTab('MyTickets');
     setSelectedTicketId(null);
+    setSidebarStatusFilter('All');
+    setSidebarAssignmentFilter('All');
   };
 
   return (
@@ -50,6 +69,7 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
         onDashboardClick={handleDashboardNav}
         onTicketsClick={handleTicketsNav} 
         onSettingsClick={() => setActiveTab('Settings')}
+        onFilterChange={handleFilterChange}
         role={currentUser.roleName}
       />
 
@@ -87,6 +107,8 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
                 onTicketClick={(id) => setSelectedTicketId(id)} 
                 currentUser={currentUser}
                 filterAssignedToUserId={activeTab === 'MyTickets' ? currentUser.id : undefined}
+                initialStatusFilter={sidebarStatusFilter}
+                initialAssignmentFilter={sidebarAssignmentFilter}
               />
             </>
           )

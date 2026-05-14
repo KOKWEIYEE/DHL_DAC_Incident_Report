@@ -11,6 +11,7 @@ export function useTickets(filterAssignedToUserId?: number) {
   const [priorityFilter, setPriorityFilter] = useState('All');
   const [assigneeFilter, setAssigneeFilter] = useState('All');
   const [dateFilter, setDateFilter] = useState('');
+  const [assignmentFilter, setAssignmentFilter] = useState('All');
 
   const loadTickets = async () => {
     setIsLoading(true);
@@ -37,9 +38,17 @@ export function useTickets(filterAssignedToUserId?: number) {
       const matchPriority = priorityFilter === 'All' || ticket.priority.toLowerCase() === priorityFilter.toLowerCase();
       const matchAssignee = assigneeFilter === 'All' || ticket.department === assigneeFilter;
       const matchDate = dateFilter === '' || ticket.timeCreated.startsWith(dateFilter);
-      return matchStatus && matchPriority && matchAssignee && matchDate;
+      
+      let matchAssignment = true;
+      if (assignmentFilter === 'assigned') {
+        matchAssignment = !!ticket.assignedTo.id;
+      } else if (assignmentFilter === 'unassigned') {
+        matchAssignment = !ticket.assignedTo.id;
+      }
+
+      return matchStatus && matchPriority && matchAssignee && matchDate && matchAssignment;
     });
-  }, [tickets, statusFilter, priorityFilter, assigneeFilter, dateFilter]);
+  }, [tickets, statusFilter, priorityFilter, assigneeFilter, dateFilter, assignmentFilter]);
 
   return {
     tickets: filteredTickets,
@@ -54,6 +63,8 @@ export function useTickets(filterAssignedToUserId?: number) {
     setAssigneeFilter,
     dateFilter,
     setDateFilter,
+    assignmentFilter,
+    setAssignmentFilter,
     refreshTickets: loadTickets
   };
 }

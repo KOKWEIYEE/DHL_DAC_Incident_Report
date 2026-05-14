@@ -7,7 +7,8 @@ import { AuthenticatedUser } from '../../auth/authTypes';
 import { useAdminPage } from '../logic/useAdminPage';
 import { CreateUserFeature } from './CreateUserFeature';
 import { ManageUserFeature } from './ManageUserFeature';
-import { SecurityFeature } from './SecurityFeature';
+import { UserSecurityFeature } from '../../user/presentation/UserSecurityFeature';
+import { useUserSettings } from '../../user/logic/useUserSettings';
 import { TicketsPage } from '../../tickets/presentation/TicketsPage';
 import { TicketDetailPage } from '../../tickets/presentation/TicketDetailPage';
 import { CreateTicketModal } from '../../tickets/components/CreateTicketModal';
@@ -46,12 +47,38 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
     users,
   } = useAdminPage(currentUser);
 
+  const {
+    passwordForm,
+    handlePasswordChange,
+    handlePasswordSubmit,
+    isUpdating: isSecurityUpdating,
+    isSuccess: isSecuritySuccess,
+    error: securityError,
+  } = useUserSettings(currentUser);
+
   const visibleUsers = users.filter((user) => user.roleName.toLowerCase() !== 'admin' && user.username !== 'admin');
   const departmentOptions = ['All', ...Array.from(new Set(visibleUsers.map((user) => user.department))).sort()];
+  
+  const [sidebarStatusFilter, setSidebarStatusFilter] = useState('All');
+  const [sidebarAssignmentFilter, setSidebarAssignmentFilter] = useState('All');
   
   const handleTicketsNav = () => {
     setActiveTab('Tickets');
     setSelectedTicketId(null);
+    setSidebarStatusFilter('All');
+    setSidebarAssignmentFilter('All');
+  };
+
+  const handleFilterChange = (filter: string) => {
+    setActiveTab('Tickets');
+    setSelectedTicketId(null);
+    if (filter === 'assigned' || filter === 'unassigned') {
+      setSidebarStatusFilter('All');
+      setSidebarAssignmentFilter(filter);
+    } else {
+      setSidebarStatusFilter(filter);
+      setSidebarAssignmentFilter('All');
+    }
   };
 
   async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
@@ -71,8 +98,10 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-gray-900">
       <Sidebar 
+        role="admin"
         onTicketsClick={handleTicketsNav}
         onSettingsClick={() => setActiveTab('Create User')}
+        onFilterChange={handleFilterChange}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
@@ -159,12 +188,13 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <SecurityFeature
-                    settings={securitySettings}
-                    isSaved={securitySaved}
-                    onToggleSetting={handleSecurityToggle}
-                    onFieldChange={handleSecurityFieldChange}
-                    onSubmit={handleSecuritySubmit}
+                  <UserSecurityFeature 
+                    formData={passwordForm}
+                    onFieldChange={handlePasswordChange}
+                    onSubmit={handlePasswordSubmit}
+                    isUpdating={isSecurityUpdating}
+                    isSuccess={isSecuritySuccess && !securityError}
+                    error={securityError}
                   />
                 </motion.div>
               )}
@@ -196,6 +226,8 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                         refreshTrigger={refreshTrigger}
                         onTicketClick={(id) => setSelectedTicketId(id)}
                         currentUser={currentUser}
+                        initialStatusFilter={sidebarStatusFilter}
+                        initialAssignmentFilter={sidebarAssignmentFilter}
                       />
                     </>
                   )}

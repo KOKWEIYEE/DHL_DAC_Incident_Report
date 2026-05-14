@@ -5,10 +5,11 @@ interface SidebarProps {
   onTicketsClick?: () => void;
   onSettingsClick?: () => void;
   onDashboardClick?: () => void;
+  onFilterChange?: (filter: string) => void;
   role?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick, onDashboardClick, role }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick, onDashboardClick, onFilterChange, role }) => {
   const [isTicketsOpen, setIsTicketsOpen] = useState(true);
   const isAdmin = role?.toLowerCase() === 'admin';
 
@@ -47,32 +48,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
 
           {isTicketsOpen && (
             <div className="flex flex-col bg-slate-900 py-2">
-              <a href="#" className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
-                <Timer size={16} />
-                Active
-              </a>
-              <a href="#" className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
+              <a href="#" 
+                 onClick={(e) => { e.preventDefault(); onFilterChange?.('assigned'); }}
+                 className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
                 <IdCard size={16} />
                 Assigned
               </a>
-              <a href="#" className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
+              <a href="#" 
+                 onClick={(e) => { e.preventDefault(); onFilterChange?.('unassigned'); }}
+                 className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
                 <UserX size={16} />
                 Unassigned
               </a>
-              
-              <div className="my-2 mx-6 border-t border-slate-800"></div>
-              
-              <a href="#" className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
-                <RotateCcw size={16} />
-                Draft
-              </a>
-              <a href="#" className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
-                <FolderOpen size={16} />
-                Reviewed
-              </a>
-              <a href="#" className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
+              <a href="#" 
+                 onClick={(e) => { e.preventDefault(); onFilterChange?.('Closed'); }}
+                 className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
                 <Folder size={16} />
-                Published
+                Closed
               </a>
             </div>
           )}
