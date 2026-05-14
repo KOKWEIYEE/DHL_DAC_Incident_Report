@@ -79,7 +79,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
               <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4">
                 <ShieldCheck className="w-10 h-10 text-white" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">SupportDesk</h1>
+              <h1 className="text-2xl font-bold tracking-tight">DHL Incident Report System</h1>
               <p className="text-indigo-100 mt-1">Enterprise Ticket Management</p>
             </motion.div>
             
@@ -190,7 +190,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
         
         <p className="mt-8 text-center text-xs text-gray-400">
-          © 2024 SupportDesk System. All rights reserved. Professional Grade Ticketing.
+          © 2024 DHL Incident Report System. All rights reserved. Professional Grade Ticketing.
         </p>
       </motion.div>
     </div>

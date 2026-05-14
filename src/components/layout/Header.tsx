@@ -29,13 +29,6 @@ export const Header: React.FC<HeaderProps> = ({ onCreateTicket, onAIDraft }) => 
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium border-none cursor-pointer transition-colors shadow-sm">
           + Create Ticket
         </button>
-        <div className="relative cursor-pointer text-slate-500 hover:text-slate-700 transition-colors">
-          <Bell size={22} />
-          <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></div>
-        </div>
-        <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden cursor-pointer border border-gray-200">
-          <img src="https://i.pravatar.cc/150?u=admin" alt="User Profile" className="h-full w-full object-cover" />
-        </div>
       </div>
     </header>
   );
