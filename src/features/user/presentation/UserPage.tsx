@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { LogOut } from 'lucide-react';
 import { Sidebar } from '../../../components/layout/Sidebar';
 import { Header } from '../../../components/layout/Header';
 import { TicketsPage } from '../../tickets/presentation/TicketsPage';
@@ -82,8 +83,9 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
           <button
             type="button"
             onClick={onLogout}
-            className="rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center gap-2 rounded-md border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"
           >
+            <LogOut size={16} />
             Log out
           </button>
         </div>

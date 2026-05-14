@@ -156,9 +156,12 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
                     onChange={e=>setAssigneeId(e.target.value ? Number(e.target.value) : null)}
                     >
                     <option value="">Unassigned</option>
-                    {availableUsers.map(user => (
-                        <option key={user.id} value={user.id}>{user.fullName}</option>
-                    ))}
+                    {availableUsers
+                        .filter(user => !group || user.department === group)
+                        .map(user => (
+                            <option key={user.id} value={user.id}>{user.fullName}</option>
+                        ))
+                    }
                     </select>
                 </div>
             </div>
