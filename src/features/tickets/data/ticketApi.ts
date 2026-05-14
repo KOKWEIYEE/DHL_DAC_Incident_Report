@@ -12,7 +12,7 @@ export async function fetchTicketsApi(): Promise<Ticket[]> {
 }
 
 export async function createTicketApi(
-  ticketData: { subject: string; description: string; department: string; requester_id: number; type?: string; priority?: string }
+  ticketData: { subject: string; description: string; department: string; requester_id: number; type?: string; priority?: string; tags?: string[] }
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/tickets`, {
     method: 'POST',

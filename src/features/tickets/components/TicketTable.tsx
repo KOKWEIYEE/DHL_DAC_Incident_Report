@@ -4,9 +4,10 @@ import { Ticket } from '../../../types';
 
 interface TicketTableProps {
   tickets: Ticket[];
+  onTicketClick?: (ticketId: string) => void;
 }
 
-export const TicketTable: React.FC<TicketTableProps> = ({ tickets }) => {
+export const TicketTable: React.FC<TicketTableProps> = ({ tickets, onTicketClick }) => {
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm flex flex-col overflow-hidden">
       <div className="overflow-x-auto">
@@ -24,7 +25,11 @@ export const TicketTable: React.FC<TicketTableProps> = ({ tickets }) => {
           </thead>
           <tbody>
             {tickets.map((ticket) => (
-              <tr key={ticket.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+              <tr 
+                key={ticket.id} 
+                className="border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer"
+                onClick={() => onTicketClick && onTicketClick(ticket.id)}
+              >
                 <td className="py-3 px-4">
                   <StatusBadge status={ticket.status} />
                 </td>

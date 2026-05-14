@@ -354,7 +354,7 @@ app.get('/api/tickets/:id', async (req, res) => {
 });
 
 app.post('/api/tickets', async (req, res) => {
-  const { subject, description, department, requester_id, type = 'Incident', priority = 'Medium', status = 'Draft' } = req.body;
+  const { subject, description, department, requester_id, type = 'Incident', priority = 'Medium', status = 'Draft', tags = [] } = req.body;
   if (!subject || !description || !department || !requester_id) {
     return res.status(400).json({ message: 'Missing required fields.' });
   }
@@ -365,6 +365,15 @@ app.post('/api/tickets', async (req, res) => {
   );
   
   const insertId = (result as { insertId: number }).insertId;
+
+  if (Array.isArray(tags) && tags.length > 0) {
+    for (const tag of tags.slice(0, 3)) {
+      await pool.execute(
+        'INSERT INTO ticket_tags (ticket_id, tag) VALUES (?, ?)',
+        [insertId, tag]
+      );
+    }
+  }
 
   await pool.execute(
     'INSERT INTO ticket_history (ticket_id, actor_id, action) VALUES (?, ?, ?)',
@@ -394,7 +403,7 @@ app.patch('/api/tickets/:id', async (req, res) => {
 
   if (tags !== undefined && Array.isArray(tags)) {
     await pool.execute('DELETE FROM ticket_tags WHERE ticket_id = ?', [ticketId]);
-    for (const tag of tags) {
+    for (const tag of tags.slice(0, 3)) {
       await pool.execute('INSERT INTO ticket_tags (ticket_id, tag) VALUES (?, ?)', [ticketId, tag]);
     }
   }

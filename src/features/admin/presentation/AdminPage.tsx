@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { LogOut, Shield, UserPlus, Users } from 'lucide-react';
 import { Sidebar } from '../../../components/layout/Sidebar';
@@ -7,6 +8,7 @@ import { CreateUserFeature } from './CreateUserFeature';
 import { ManageUserFeature } from './ManageUserFeature';
 import { SecurityFeature } from './SecurityFeature';
 import { TicketsPage } from '../../tickets/presentation/TicketsPage';
+import { TicketDetailPage } from '../../tickets/presentation/TicketDetailPage';
 
 interface AdminPageProps {
   currentUser: AuthenticatedUser;
@@ -14,6 +16,7 @@ interface AdminPageProps {
 }
 
 export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const {
     activeTab,
     createSuccess,
@@ -145,7 +148,19 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                   transition={{ duration: 0.2 }}
                   className="h-[calc(100vh-200px)] flex flex-col"
                 >
-                  <TicketsPage />
+                  {selectedTicketId ? (
+                    <div className="flex-1 overflow-hidden h-full">
+                      <TicketDetailPage 
+                        ticketId={selectedTicketId} 
+                        currentUser={currentUser} 
+                        onBack={() => {
+                          setSelectedTicketId(null);
+                        }} 
+                      />
+                    </div>
+                  ) : (
+                    <TicketsPage onTicketClick={(id) => setSelectedTicketId(id)} />
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

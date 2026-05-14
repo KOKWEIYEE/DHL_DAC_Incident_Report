@@ -4,6 +4,7 @@ import { Header } from '../../../components/layout/Header';
 import { TicketsPage } from '../../tickets/presentation/TicketsPage';
 import { CreateTicketModal } from '../../tickets/components/CreateTicketModal';
 import { createTicketApi } from '../../tickets/data/ticketApi';
+import { TicketDetailPage } from '../../tickets/presentation/TicketDetailPage';
 import { AuthenticatedUser } from '../../auth/authTypes';
 
 interface UserPageProps {
@@ -14,8 +15,9 @@ interface UserPageProps {
 export function UserPage({ currentUser, onLogout }: UserPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
 
-  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string }) {
+  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
     try {
       await createTicketApi({
         ...data,
@@ -34,7 +36,7 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
       <Sidebar />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <div className="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-3">
+        <div className="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-3 shrink-0">
           <div className="text-sm font-semibold text-gray-700">User dashboard</div>
           <button
             type="button"
@@ -45,9 +47,23 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
           </button>
         </div>
 
-        <Header onCreateTicket={() => setIsModalOpen(true)} />
-
-        <TicketsPage refreshTrigger={refreshTrigger} />
+        {selectedTicketId ? (
+          <div className="flex-1 overflow-hidden">
+            <TicketDetailPage 
+              ticketId={selectedTicketId} 
+              currentUser={currentUser} 
+              onBack={() => {
+                setSelectedTicketId(null);
+                setRefreshTrigger(prev => prev + 1);
+              }} 
+            />
+          </div>
+        ) : (
+          <>
+            <Header onCreateTicket={() => setIsModalOpen(true)} />
+            <TicketsPage refreshTrigger={refreshTrigger} onTicketClick={(id) => setSelectedTicketId(id)} />
+          </>
+        )}
       </main>
 
       <CreateTicketModal

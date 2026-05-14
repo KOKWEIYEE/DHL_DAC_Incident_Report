@@ -5,7 +5,7 @@ import { Ticket } from '../../../types';
 interface CreateTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: { subject: string; description: string; department: string; type: string; priority: string }) => void;
+  onCreate: (data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) => void;
 }
 
 export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate }) => {
@@ -13,6 +13,8 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
   const [subject, setSubject] = useState('Ticket with and image');
   const [group, setGroup] = useState('IT Services');
   const [type, setType] = useState('Issue');
+  const [tags, setTags] = useState<string[]>([]);
+  const [newTagInput, setNewTagInput] = useState('');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -69,7 +71,8 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
       department: group || 'IT Services',
       description,
       type,
-      priority
+      priority,
+      tags
     });
   };
 
@@ -117,8 +120,39 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
                 </select>
                 </div>
                 <div className="flex-1">
-                <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Tags</label>
-                <input type="text" className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 text-[15px]" />
+                  <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Tags (Max 3)</label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {tags.map((tag) => (
+                      <span key={tag} className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-indigo-50 text-indigo-700 text-[13px] font-medium border border-indigo-100">
+                        {tag}
+                        <button
+                          type="button"
+                          onClick={() => setTags(tags.filter(t => t !== tag))}
+                          className="hover:text-indigo-900 transition-colors"
+                        >
+                          <X size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="Press enter to add tag"
+                    className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 text-[15px]" 
+                    value={newTagInput}
+                    onChange={(e) => setNewTagInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const tag = newTagInput.trim();
+                        if (tag && tags.length < 3 && !tags.includes(tag)) {
+                          setTags([...tags, tag]);
+                          setNewTagInput('');
+                        }
+                      }
+                    }}
+                    disabled={tags.length >= 3}
+                  />
                 </div>
             </div>
 

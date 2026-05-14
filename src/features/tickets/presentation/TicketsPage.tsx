@@ -4,9 +4,10 @@ import { useTickets } from '../logic/useTickets';
 
 interface TicketsPageProps {
   refreshTrigger?: number;
+  onTicketClick?: (ticketId: string) => void;
 }
 
-export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0 }) => {
+export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0, onTicketClick }) => {
   const {
     tickets,
     isLoading,
@@ -83,7 +84,7 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0 }) 
         </div>
       </div>
 
-      <TicketTable tickets={tickets} />
+      <TicketTable tickets={tickets} onTicketClick={onTicketClick} />
     </div>
   );
 };
