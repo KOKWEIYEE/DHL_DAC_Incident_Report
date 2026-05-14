@@ -17,6 +17,7 @@ type UserRow = RowDataPacket & {
   department: string | null;
   role_id: number;
   role_name: string;
+  avatar: string | null;
   created_at: Date;
 };
 
@@ -231,8 +232,48 @@ app.post('/api/auth/login', async (req, res) => {
       roleId: user.role_id,
       roleName: user.role_name,
       createdAt: user.created_at,
+      avatar: user.avatar,
     },
   });
+});
+
+app.patch('/api/users/:id/profile', async (req, res) => {
+  const userId = Number(req.params.id);
+  const { avatar } = req.body as { avatar?: string };
+
+  if (!Number.isInteger(userId)) {
+    return res.status(400).json({ message: 'Invalid user id.' });
+  }
+
+  await pool.execute('UPDATE users SET avatar = ? WHERE id = ?', [avatar || null, userId]);
+  res.json({ message: 'Profile updated successfully.' });
+});
+
+app.patch('/api/users/:id/password', async (req, res) => {
+  const userId = Number(req.params.id);
+  const { currentPassword, newPassword } = req.body as { currentPassword?: string; newPassword?: string };
+
+  if (!Number.isInteger(userId)) {
+    return res.status(400).json({ message: 'Invalid user id.' });
+  }
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Current password and new password are required.' });
+  }
+
+  const [rows] = await pool.query<RowDataPacket[]>('SELECT password_hash FROM users WHERE id = ?', [userId]);
+  if (rows.length === 0) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+
+  const isValid = await verifyPassword(currentPassword, rows[0].password_hash);
+  if (!isValid) {
+    return res.status(401).json({ message: 'Incorrect current password.' });
+  }
+
+  const newHash = await hashPassword(newPassword);
+  await pool.execute('UPDATE users SET password_hash = ? WHERE id = ?', [newHash, userId]);
+  res.json({ message: 'Password changed successfully.' });
 });
 
 app.get('/api/tickets', async (_req, res) => {
@@ -534,6 +575,7 @@ async function ensureTables() {
         ON DELETE RESTRICT
     ) ENGINE=InnoDB;`
   );
+  await pool.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar LONGTEXT AFTER role_id').catch(() => {});
 }
 
 async function ensureDepartmentColumn() {

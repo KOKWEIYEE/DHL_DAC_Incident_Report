@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { LogOut, Shield, UserPlus, Users } from 'lucide-react';
 import { Sidebar } from '../../../components/layout/Sidebar';
+import { Header } from '../../../components/layout/Header';
 import { AuthenticatedUser } from '../../auth/authTypes';
 import { useAdminPage } from '../logic/useAdminPage';
 import { CreateUserFeature } from './CreateUserFeature';
@@ -9,6 +10,8 @@ import { ManageUserFeature } from './ManageUserFeature';
 import { SecurityFeature } from './SecurityFeature';
 import { TicketsPage } from '../../tickets/presentation/TicketsPage';
 import { TicketDetailPage } from '../../tickets/presentation/TicketDetailPage';
+import { CreateTicketModal } from '../../tickets/components/CreateTicketModal';
+import { createTicketApi } from '../../tickets/data/ticketApi';
 
 interface AdminPageProps {
   currentUser: AuthenticatedUser;
@@ -17,6 +20,8 @@ interface AdminPageProps {
 
 export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const {
     activeTab,
     createSuccess,
@@ -41,17 +46,32 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
     users,
   } = useAdminPage(currentUser);
 
-  useEffect(() => {
-    setActiveTab('Tickets');
-  }, [setActiveTab]);
-
   const visibleUsers = users.filter((user) => user.roleName.toLowerCase() !== 'admin' && user.username !== 'admin');
   const departmentOptions = ['All', ...Array.from(new Set(visibleUsers.map((user) => user.department))).sort()];
+  
+  const handleTicketsNav = () => {
+    setActiveTab('Tickets');
+    setSelectedTicketId(null);
+  };
+
+  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
+    try {
+      await createTicketApi({
+        ...data,
+        requester_id: currentUser.id
+      });
+      setRefreshTrigger(prev => prev + 1);
+      setIsModalOpen(false);
+    } catch (err) {
+      alert('Failed to create ticket.');
+      console.error(err);
+    }
+  }
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-gray-900">
       <Sidebar 
-        onTicketsClick={() => setActiveTab('Tickets')}
+        onTicketsClick={handleTicketsNav}
         onSettingsClick={() => setActiveTab('Create User')}
       />
 
@@ -165,11 +185,19 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                         currentUser={currentUser} 
                         onBack={() => {
                           setSelectedTicketId(null);
+                          setRefreshTrigger(prev => prev + 1);
                         }} 
                       />
                     </div>
                   ) : (
-                    <TicketsPage onTicketClick={(id) => setSelectedTicketId(id)} />
+                    <>
+                      <Header onCreateTicket={() => setIsModalOpen(true)} />
+                      <TicketsPage 
+                        refreshTrigger={refreshTrigger}
+                        onTicketClick={(id) => setSelectedTicketId(id)}
+                        currentUser={currentUser}
+                      />
+                    </>
                   )}
                 </motion.div>
               )}
@@ -180,6 +208,13 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
           </div>
         </div>
       </main>
+
+      <CreateTicketModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onCreate={handleCreateTicket}
+      />
     </div>
   );
 }
+

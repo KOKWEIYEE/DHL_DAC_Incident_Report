@@ -22,7 +22,8 @@ import {
   User,
   History,
   MessageSquare,
-  ChevronDown
+  ChevronDown,
+  Trash2
 } from 'lucide-react';
 import { StatusBadge } from '../components/Badges';
 import { useTicketDetail } from '../logic/useTicketDetail';

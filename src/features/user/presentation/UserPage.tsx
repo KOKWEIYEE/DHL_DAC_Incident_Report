@@ -6,6 +6,7 @@ import { CreateTicketModal } from '../../tickets/components/CreateTicketModal';
 import { createTicketApi } from '../../tickets/data/ticketApi';
 import { TicketDetailPage } from '../../tickets/presentation/TicketDetailPage';
 import { AuthenticatedUser } from '../../auth/authTypes';
+import { UserSettingsPage } from './UserSettingsPage';
 
 interface UserPageProps {
   currentUser: AuthenticatedUser;
@@ -18,6 +19,7 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'Tickets' | 'Settings'>('Tickets');
 
   async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[] }) {
     try {
@@ -33,13 +35,23 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
     }
   }
 
+  const handleTicketsNav = () => {
+    setActiveTab('Tickets');
+    setSelectedTicketId(null);
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 font-sans text-gray-900">
-      <Sidebar onTicketsClick={() => {}} />
+      <Sidebar 
+        onTicketsClick={handleTicketsNav} 
+        onSettingsClick={() => setActiveTab('Settings')}
+      />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-3 shrink-0">
-          <div className="text-sm font-semibold text-gray-700">User dashboard</div>
+          <div className="text-sm font-semibold text-gray-700">
+            {activeTab === 'Tickets' ? 'User dashboard' : 'User settings'}
+          </div>
           <button
             type="button"
             onClick={onLogout}
@@ -49,22 +61,26 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
           </button>
         </div>
 
-        {selectedTicketId ? (
-          <div className="flex-1 overflow-hidden">
-            <TicketDetailPage 
-              ticketId={selectedTicketId} 
-              currentUser={currentUser} 
-              onBack={() => {
-                setSelectedTicketId(null);
-                setRefreshTrigger(prev => prev + 1);
-              }} 
-            />
-          </div>
+        {activeTab === 'Tickets' ? (
+          selectedTicketId ? (
+            <div className="flex-1 overflow-hidden">
+              <TicketDetailPage 
+                ticketId={selectedTicketId} 
+                currentUser={currentUser} 
+                onBack={() => {
+                  setSelectedTicketId(null);
+                  setRefreshTrigger(prev => prev + 1);
+                }} 
+              />
+            </div>
+          ) : (
+            <>
+              <Header onCreateTicket={() => setIsModalOpen(true)} />
+              <TicketsPage refreshTrigger={refreshTrigger} onTicketClick={(id) => setSelectedTicketId(id)} />
+            </>
+          )
         ) : (
-          <>
-            <Header onCreateTicket={() => setIsModalOpen(true)} />
-            <TicketsPage refreshTrigger={refreshTrigger} onTicketClick={(id) => setSelectedTicketId(id)} />
-          </>
+          <UserSettingsPage currentUser={currentUser} />
         )}
       </main>
 
