@@ -12,6 +12,7 @@ import { useUserSettings } from '../../user/logic/useUserSettings';
 import { TicketsPage } from '../../tickets/presentation/TicketsPage';
 import { TicketDetailPage } from '../../tickets/presentation/TicketDetailPage';
 import { CreateTicketModal } from '../../tickets/components/CreateTicketModal';
+import { AIDraftModal } from '../../tickets/components/AIDraftModal';
 import { createTicketApi } from '../../tickets/data/ticketApi';
 
 interface AdminPageProps {
@@ -22,6 +23,8 @@ interface AdminPageProps {
 export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
   const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isAIDraftModalOpen, setIsAIDraftModalOpen] = useState(false);
+  const [initialDraft, setInitialDraft] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const {
     activeTab,
@@ -231,7 +234,13 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                     </div>
                   ) : (
                     <>
-                      <Header onCreateTicket={() => setIsModalOpen(true)} />
+                      <Header 
+                        onCreateTicket={() => {
+                          setInitialDraft(null);
+                          setIsModalOpen(true);
+                        }} 
+                        onAIDraft={() => setIsAIDraftModalOpen(true)}
+                      />
                       <TicketsPage 
                         refreshTrigger={refreshTrigger}
                         onTicketClick={(id) => setSelectedTicketId(id)}
@@ -253,8 +262,22 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
 
       <CreateTicketModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => {
+          setIsModalOpen(false);
+          setInitialDraft(null);
+        }}
         onCreate={handleCreateTicket}
+        initialData={initialDraft}
+      />
+
+      <AIDraftModal 
+        isOpen={isAIDraftModalOpen}
+        onClose={() => setIsAIDraftModalOpen(false)}
+        onDraftGenerated={(draft) => {
+          setInitialDraft(draft);
+          setIsAIDraftModalOpen(false);
+          setIsModalOpen(true);
+        }}
       />
     </div>
   );

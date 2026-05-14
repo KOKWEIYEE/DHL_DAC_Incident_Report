@@ -1,13 +1,15 @@
-import cors from 'cors';
 import dotenv from 'dotenv';
+dotenv.config();
+
+import cors from 'cors';
 import express from 'express';
 import { createHash } from 'crypto';
 import { RowDataPacket } from 'mysql2';
 import mysql from 'mysql2/promise';
 import { pool } from './db';
 import { hashPassword, verifyPassword } from './password';
-
-dotenv.config();
+import { listRecentFiles, getFileContent } from './driveService';
+import { generateTicketDraft } from './geminiService';
 
 type UserRow = RowDataPacket & {
   id: number;
@@ -199,43 +201,48 @@ app.delete('/api/users/:id', async (req, res) => {
 });
 
 app.post('/api/auth/login', async (req, res) => {
-  const { username, password } = req.body as {
-    username?: string;
-    password?: string;
-  };
+  try {
+    const { username, password } = req.body as {
+      username?: string;
+      password?: string;
+    };
 
-  if (!username || !password) {
-    res.status(400).json({ message: 'username and password are required.' });
-    return;
+    if (!username || !password) {
+      res.status(400).json({ message: 'username and password are required.' });
+      return;
+    }
+
+    const [rows] = await pool.query<UserRow[]>(
+      `SELECT u.id, u.username, u.password_hash, u.full_name, u.department, u.role_id, r.role_name, u.avatar, u.created_at
+       FROM users u
+       INNER JOIN roles r ON r.id = u.role_id
+       WHERE u.username = ?
+       LIMIT 1`,
+      [username]
+    );
+
+    const user = rows[0];
+    if (!user || !(await verifyPassword(password, user.password_hash))) {
+      res.status(401).json({ message: 'Invalid username or password.' });
+      return;
+    }
+
+    res.json({
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.full_name,
+        department: user.department,
+        roleId: user.role_id,
+        roleName: user.role_name,
+        createdAt: user.created_at,
+        avatar: user.avatar,
+      },
+    });
+  } catch (error: any) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'An internal error occurred during sign-in.', error: error.message });
   }
-
-  const [rows] = await pool.query<UserRow[]>(
-    `SELECT u.id, u.username, u.password_hash, u.full_name, u.department, u.role_id, r.role_name, u.avatar, u.created_at
-     FROM users u
-     INNER JOIN roles r ON r.id = u.role_id
-     WHERE u.username = ?
-     LIMIT 1`,
-    [username]
-  );
-
-  const user = rows[0];
-  if (!user || !(await verifyPassword(password, user.password_hash))) {
-    res.status(401).json({ message: 'Invalid username or password.' });
-    return;
-  }
-
-  res.json({
-    user: {
-      id: user.id,
-      username: user.username,
-      fullName: user.full_name,
-      department: user.department,
-      roleId: user.role_id,
-      roleName: user.role_name,
-      createdAt: user.created_at,
-      avatar: user.avatar,
-    },
-  });
 });
 
 app.patch('/api/users/:id/profile', async (req, res) => {
@@ -562,6 +569,47 @@ app.delete('/api/tickets/:id/comments/:commentId', async (req, res) => {
   res.json({ message: 'Comment deleted successfully.' });
 });
 
+// Global Error Handler
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error('Unhandled Error:', err);
+  res.status(500).json({
+    message: 'An unexpected error occurred.',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
+});
+
+// AI & Google Drive Endpoints
+app.get('/api/drive/files', async (_req, res) => {
+  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1cvhwwW88JUmdXbDqdOJYIuEYvE6RnEGf';
+  try {
+    const files = await listRecentFiles(folderId);
+    res.json({ files });
+  } catch (error: any) {
+    res.status(500).json({ message: 'Failed to fetch Drive files', error: error.message });
+  }
+});
+
+app.post('/api/tickets/ai-draft', async (req, res) => {
+  const { content, fileId } = req.body as { content?: string; fileId?: string };
+  
+  try {
+    let finalContent = content;
+
+    if (fileId) {
+      finalContent = await getFileContent(fileId);
+    }
+
+    if (!finalContent) {
+      return res.status(400).json({ message: 'No content or fileId provided.' });
+    }
+
+    const draft = await generateTicketDraft(finalContent);
+    res.json({ draft });
+  } catch (error: any) {
+    res.status(500).json({ message: 'AI processing failed', error: error.message });
+  }
+});
+
 async function seedDefaultAdmin() {
   await pool.execute(
     'INSERT INTO roles (role_name) VALUES (?) ON DUPLICATE KEY UPDATE role_name = VALUES(role_name)',
@@ -631,22 +679,23 @@ async function ensureTables() {
         ON DELETE RESTRICT
     ) ENGINE=InnoDB;`
   );
-  await pool.execute('ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar LONGTEXT AFTER role_id').catch(() => {});
 }
 
-async function ensureDepartmentColumn() {
+async function ensureColumnExists(tableName: string, columnName: string, definition: string) {
   const [rows] = await pool.query<RowDataPacket[]>(
     `SELECT COUNT(*) AS count
      FROM information_schema.COLUMNS
-     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = 'users' AND COLUMN_NAME = 'department'`,
-    [dbName]
+     WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND COLUMN_NAME = ?`,
+    [dbName, tableName, columnName]
   );
 
   const count = Number((rows[0] as { count?: number }).count ?? 0);
   if (count === 0) {
-    await pool.execute('ALTER TABLE users ADD COLUMN department VARCHAR(150) NULL');
+    await pool.execute(`ALTER TABLE \`${tableName}\` ADD COLUMN ${columnName} ${definition}`);
   }
 }
+
+
 
 async function ensureTicketsTables() {
   await pool.execute(
@@ -712,7 +761,8 @@ async function startServer() {
   try {
     await ensureDatabase();
     await ensureTables();
-    await ensureDepartmentColumn();
+    await ensureColumnExists('users', 'avatar', 'LONGTEXT AFTER role_id');
+    await ensureColumnExists('users', 'department', 'VARCHAR(150) NULL');
     await ensureTicketsTables();
     await seedDefaultAdmin();
 

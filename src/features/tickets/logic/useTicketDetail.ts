@@ -26,6 +26,8 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
   const [activeFormats, setActiveFormats] = useState<{ [key: string]: boolean }>({});
   const [attachments, setAttachments] = useState<File[]>([]);
 
+  const [pendingAssignee, setPendingAssignee] = useState<{ id: number; name: string } | null>(null);
+
   const loadTicket = async () => {
     setIsLoading(true);
     try {
@@ -35,6 +37,7 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
       setCurrentPriority(data.priority);
       setCurrentType(data.type);
       setCurrentTags(data.tags || []);
+      setPendingAssignee(null); // Reset pending on load
       setError(null);
     } catch (err: any) {
       setError(err.message);
@@ -62,18 +65,9 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     }
   }, [ticketId]);
 
-  const handleAssign = async (userId: number, userName: string) => {
-    if (!ticket) return;
-    setIsAssigning(true);
-    try {
-      await updateTicketApi(ticketId, { assignee_id: userId } as any, currentUser.id, `Ticket assigned to ${userName}`);
-      await loadTicket();
-      setAssigneeSearch('');
-    } catch (err: any) {
-      alert(`Error assigning ticket: ${err.message}`);
-    } finally {
-      setIsAssigning(false);
-    }
+  const handleAssign = (userId: number, userName: string) => {
+    setPendingAssignee({ id: userId, name: userName });
+    setAssigneeSearch('');
   };
 
   const filteredUsers = users.filter(u => {
@@ -222,7 +216,7 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     if (!ticket) return;
     
     let hasChanges = false;
-    const updates: Partial<Ticket> = {};
+    const updates: any = {};
     const actions: string[] = [];
 
     if (currentStatus !== ticket.status) {
@@ -246,6 +240,12 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
         hasChanges = true;
         updates.tags = newTags;
         actions.push(`Ticket Tags updated`);
+    }
+
+    if (pendingAssignee) {
+        hasChanges = true;
+        updates.assignee_id = pendingAssignee.id;
+        actions.push(`Ticket assigned to ${pendingAssignee.name}`);
     }
 
     if (hasChanges) {
@@ -276,6 +276,7 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
     setCurrentTags,
     newTagInput,
     setNewTagInput,
+    pendingAssignee,
     editorRef,
     activeFormats,
     updateActiveFormats,
@@ -299,7 +300,8 @@ export function useTicketDetail(ticketId: string, currentUser: AuthenticatedUser
       currentStatus !== ticket.status || 
       currentPriority !== ticket.priority || 
       currentType !== ticket.type || 
-      currentTags.join(',') !== (ticket.tags || []).join(',')
+      currentTags.join(',') !== (ticket.tags || []).join(',') ||
+      pendingAssignee !== null
     ) : false
   };
 }

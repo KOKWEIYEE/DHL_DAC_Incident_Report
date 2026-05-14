@@ -8,9 +8,10 @@ interface CreateTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreate: (data: { subject: string; description: string; department: string; type: string; priority: string; tags?: string[]; assigneeId?: number | null }) => void;
+  initialData?: { subject?: string; description?: string; department?: string; type?: string; priority?: string; tags?: string[] } | null;
 }
 
-export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate }) => {
+export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate, initialData }) => {
   const [priority, setPriority] = useState('Medium');
   const [subject, setSubject] = useState('');
   const [group, setGroup] = useState('');
@@ -25,6 +26,27 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
       }).catch(err => console.error('Failed to fetch users:', err));
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && initialData) {
+      if (initialData.subject) setSubject(initialData.subject);
+      if (initialData.department) setGroup(initialData.department);
+      if (initialData.type) setType(initialData.type);
+      if (initialData.priority) setPriority(initialData.priority);
+      if (initialData.tags) setTags(initialData.tags);
+      if (initialData.description && editorRef.current) {
+        editorRef.current.innerHTML = initialData.description;
+      }
+    } else if (isOpen && !initialData) {
+      // Clear form when opening for a fresh ticket
+      setSubject('');
+      setGroup('');
+      setType('Issue');
+      setPriority('Medium');
+      setTags([]);
+      if (editorRef.current) editorRef.current.innerHTML = '';
+    }
+  }, [isOpen, initialData]);
 
   const [tags, setTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState('');
