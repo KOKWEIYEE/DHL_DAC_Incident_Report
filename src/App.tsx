@@ -23,5 +23,5 @@ export default function App() {
     return <AdminPage currentUser={currentUser} onLogout={handleLogout} />;
   }
 
-  return <UserPage onLogout={handleLogout} />;
+  return <UserPage currentUser={currentUser} onLogout={handleLogout} />;
 }

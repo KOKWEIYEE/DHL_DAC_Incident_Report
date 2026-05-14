@@ -1,29 +1,41 @@
-import React, { useState, useMemo } from 'react';
-import { TicketTable } from './components/TicketTable';
-import { Ticket } from '../../types';
+import React, { useEffect } from 'react';
+import { TicketTable } from '../components/TicketTable';
+import { useTickets } from '../logic/useTickets';
 
 interface TicketsPageProps {
-  tickets: Ticket[];
+  refreshTrigger?: number;
 }
 
-export const TicketsPage: React.FC<TicketsPageProps> = ({ tickets }) => {
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [priorityFilter, setPriorityFilter] = useState('All');
-  const [assigneeFilter, setAssigneeFilter] = useState('All');
-  const [dateFilter, setDateFilter] = useState('');
+export const TicketsPage: React.FC<TicketsPageProps> = ({ refreshTrigger = 0 }) => {
+  const {
+    tickets,
+    isLoading,
+    error,
+    uniqueAssignees,
+    statusFilter,
+    setStatusFilter,
+    priorityFilter,
+    setPriorityFilter,
+    assigneeFilter,
+    setAssigneeFilter,
+    dateFilter,
+    setDateFilter,
+    refreshTickets
+  } = useTickets();
 
-  // get unique assignees for dropdown
-  const uniqueAssignees = Array.from(new Set(tickets.map(t => t.department)));
+  useEffect(() => {
+    if (refreshTrigger > 0) {
+      refreshTickets();
+    }
+  }, [refreshTrigger]);
 
-  const filteredTickets = useMemo(() => {
-    return tickets.filter(ticket => {
-      const matchStatus = statusFilter === 'All' || ticket.status.toLowerCase() === statusFilter.toLowerCase();
-      const matchPriority = priorityFilter === 'All' || ticket.priority.toLowerCase() === priorityFilter.toLowerCase();
-      const matchAssignee = assigneeFilter === 'All' || ticket.department === assigneeFilter;
-      const matchDate = dateFilter === '' || ticket.timeCreated.startsWith(dateFilter);
-      return matchStatus && matchPriority && matchAssignee && matchDate;
-    });
-  }, [tickets, statusFilter, priorityFilter, assigneeFilter, dateFilter]);
+  if (isLoading && tickets.length === 0) {
+    return <div className="p-6 text-gray-500">Loading tickets...</div>;
+  }
+
+  if (error) {
+    return <div className="p-6 text-red-500">Error: {error}</div>;
+  }
 
   return (
     <div className="flex-1 p-6 flex flex-col overflow-y-auto">
@@ -71,7 +83,7 @@ export const TicketsPage: React.FC<TicketsPageProps> = ({ tickets }) => {
         </div>
       </div>
 
-      <TicketTable tickets={filteredTickets} />
+      <TicketTable tickets={tickets} />
     </div>
   );
 };

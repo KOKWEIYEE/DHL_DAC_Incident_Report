@@ -6,6 +6,7 @@ import { useAdminPage } from '../logic/useAdminPage';
 import { CreateUserFeature } from './CreateUserFeature';
 import { ManageUserFeature } from './ManageUserFeature';
 import { SecurityFeature } from './SecurityFeature';
+import { TicketsPage } from '../../tickets/presentation/TicketsPage';
 
 interface AdminPageProps {
   currentUser: AuthenticatedUser;
@@ -65,7 +66,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
         <div className="flex-1 overflow-y-auto">
           <div className="w-full px-6 py-4">
             <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg mb-4 w-fit">
-              {(['Create User', 'Manage User', 'Security'] as const).map((tab) => (
+              {(['Create User', 'Manage User', 'Security', 'Tickets'] as const).map((tab) => (
                 <button
                   key={tab}
                   type="button"
@@ -77,6 +78,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                   {tab === 'Create User' && <UserPlus size={14} />}
                   {tab === 'Manage User' && <Users size={14} />}
                   {tab === 'Security' && <Shield size={14} />}
+                  {tab === 'Tickets' && <span className="mr-1">🎫</span>}
                   {tab}
                 </button>
               ))}
@@ -131,6 +133,19 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                     onFieldChange={handleSecurityFieldChange}
                     onSubmit={handleSecuritySubmit}
                   />
+                </motion.div>
+              )}
+
+              {activeTab === 'Tickets' && (
+                <motion.div
+                  key="tickets"
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.2 }}
+                  className="h-[calc(100vh-200px)] flex flex-col"
+                >
+                  <TicketsPage />
                 </motion.div>
               )}
             </AnimatePresence>

@@ -5,14 +5,14 @@ import { Ticket } from '../../../types';
 interface CreateTicketModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (ticket: Ticket) => void;
-  nextId: number;
+  onCreate: (data: { subject: string; description: string; department: string; type: string; priority: string }) => void;
 }
 
-export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate, nextId }) => {
+export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, onClose, onCreate }) => {
   const [priority, setPriority] = useState('Medium');
   const [subject, setSubject] = useState('Ticket with and image');
   const [group, setGroup] = useState('IT Services');
+  const [type, setType] = useState('Issue');
   const [attachments, setAttachments] = useState<File[]>([]);
   const [activeFormats, setActiveFormats] = useState({
     bold: false,
@@ -62,22 +62,15 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
 
   const handleCreateTicket = (e: React.MouseEvent) => {
     e.preventDefault();
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }).toUpperCase();
+    const description = editorRef.current?.innerHTML || subject;
     
-    const newTicket: Ticket = {
-      id: `${nextId}`,
-      requester: 'Admin User',
-      requesterAvatar: 'https://i.pravatar.cc/150?u=admin',
+    onCreate({
       subject: subject || 'New Request',
       department: group || 'IT Services',
-      lastUpdated: `${dateStr} ${timeStr}`,
-      timeCreated: `${dateStr} ${timeStr}`,
-      status: 'Draft',
-      priority: priority
-    };
-    onCreate(newTicket);
+      description,
+      type,
+      priority
+    });
   };
 
   return (
@@ -113,7 +106,11 @@ export const CreateTicketModal: React.FC<CreateTicketModalProps> = ({ isOpen, on
             <div className="flex flex-col sm:flex-row gap-6 mb-6">
                 <div className="flex-1">
                 <label className="text-[13px] font-bold text-[#1e3a8a] mb-1 block">Type</label>
-                <select className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 bg-transparent text-[15px]">
+                <select 
+                  className="w-full border-b border-gray-300 py-2 outline-none focus:border-indigo-500 text-slate-800 bg-transparent text-[15px]"
+                  value={type}
+                  onChange={e => setType(e.target.value)}
+                >
                     <option>Issue</option>
                     <option>Task</option>
                     <option>Request</option>

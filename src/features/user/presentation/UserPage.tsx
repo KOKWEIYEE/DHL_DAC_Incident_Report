@@ -1,22 +1,32 @@
 import React, { useState } from 'react';
 import { Sidebar } from '../../../components/layout/Sidebar';
 import { Header } from '../../../components/layout/Header';
-import { TicketsPage } from '../../tickets/TicketsPage';
+import { TicketsPage } from '../../tickets/presentation/TicketsPage';
 import { CreateTicketModal } from '../../tickets/components/CreateTicketModal';
-import { INITIAL_TICKETS } from '../../../data/mockTickets';
-import { Ticket } from '../../../types';
+import { createTicketApi } from '../../tickets/data/ticketApi';
+import { AuthenticatedUser } from '../../auth/authTypes';
 
 interface UserPageProps {
+  currentUser: AuthenticatedUser;
   onLogout: () => void;
 }
 
-export function UserPage({ onLogout }: UserPageProps) {
-  const [tickets, setTickets] = useState<Ticket[]>(INITIAL_TICKETS);
+export function UserPage({ currentUser, onLogout }: UserPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-  function handleCreateTicket(newTicket: Ticket) {
-    setTickets([newTicket, ...tickets]);
-    setIsModalOpen(false);
+  async function handleCreateTicket(data: { subject: string; description: string; department: string; type: string; priority: string }) {
+    try {
+      await createTicketApi({
+        ...data,
+        requester_id: currentUser.id
+      });
+      setRefreshTrigger(prev => prev + 1);
+      setIsModalOpen(false);
+    } catch (err) {
+      alert('Failed to create ticket.');
+      console.error(err);
+    }
   }
 
   return (
@@ -37,14 +47,13 @@ export function UserPage({ onLogout }: UserPageProps) {
 
         <Header onCreateTicket={() => setIsModalOpen(true)} />
 
-        <TicketsPage tickets={tickets} />
+        <TicketsPage refreshTrigger={refreshTrigger} />
       </main>
 
       <CreateTicketModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreate={handleCreateTicket}
-        nextId={1 + tickets.length}
       />
     </div>
   );

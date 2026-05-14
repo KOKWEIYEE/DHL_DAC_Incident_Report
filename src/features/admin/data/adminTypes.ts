@@ -1,4 +1,4 @@
-export type AdminTab = 'Create User' | 'Manage User' | 'Security';
+export type AdminTab = 'Create User' | 'Manage User' | 'Security' | 'Tickets';
 
 export interface CreateUserForm {
   fullName: string;
