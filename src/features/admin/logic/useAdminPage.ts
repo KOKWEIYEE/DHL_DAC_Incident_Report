@@ -156,6 +156,36 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
     }
   }
 
+  async function handleResetPassword(userId: number) {
+    const newPassword = window.prompt('Enter new temporary password for this user:');
+    if (!newPassword) return;
+
+    // Password validation: min 8 chars and at least 1 special char
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    if (newPassword.length < 8) {
+      alert('Password must be at least 8 characters long.');
+      return;
+    }
+    if (!specialCharRegex.test(newPassword)) {
+      alert('Password must contain at least one special character (!@#$%^&* etc.).');
+      return;
+    }
+
+    const confirmed = await requirePasswordConfirmation('reset this user\'s password');
+    if (!confirmed) return;
+
+    try {
+      const { resetAdminUserPassword } = await import('../data/adminApi');
+      await resetAdminUserPassword(userId, newPassword);
+      setUserActionMessage('User password has been reset successfully.');
+      window.setTimeout(() => {
+        setUserActionMessage('');
+      }, 2500);
+    } catch (err: any) {
+      alert('Failed to reset password: ' + err.message);
+    }
+  }
+
   function handleSecurityToggle(field: keyof Pick<SecuritySettings, 'mfaEnabled' | 'ipWhitelistEnabled' | 'auditLoggingEnabled'>) {
     setSecuritySettings((currentSettings) => ({
       ...currentSettings,
@@ -194,6 +224,7 @@ export function useAdminPage(currentUser?: AuthenticatedUser) {
     handleTabClick,
     handleToggleUserStatus,
     handleUpdateUser,
+    handleResetPassword,
     searchTerm,
     isLoadingUsers,
     userActionMessage,

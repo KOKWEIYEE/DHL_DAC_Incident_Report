@@ -363,7 +363,7 @@ app.get('/api/tickets/:id', async (req, res) => {
   const comments = commentsRows.map(c => ({
     id: c.id.toString(),
     author: c.full_name,
-    authorEmail: `${c.username}@dhl.com`,
+    authorEmail: c.username,
     authorAvatar: '',
     text: c.text,
     timestamp: new Date(c.created_at).toLocaleString(),
@@ -397,12 +397,12 @@ app.get('/api/tickets/:id', async (req, res) => {
       lastUpdated: new Date(t.updated_at).toLocaleString(),
       requester: t.requester_name,
       requesterAvatar: '',
-      requesterEmail: `${t.requester_username}@dhl.com`,
+      requesterEmail: t.requester_username,
       assignedTo: t.assignee_id ? {
         id: t.assignee_id,
         avatar: '',
         name: t.assignee_name,
-        email: `${t.assignee_username}@dhl.com`,
+        email: t.assignee_username,
         role: t.assignee_role
       } : {
         id: null,

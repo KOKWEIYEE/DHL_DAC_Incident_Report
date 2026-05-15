@@ -73,12 +73,19 @@ export function UserPage({ currentUser, onLogout }: UserPageProps) {
         onSettingsClick={() => setActiveTab('Settings')}
         onFilterChange={handleFilterChange}
         role={currentUser.roleName}
+        activeTab={activeTab}
+        activeFilter={sidebarAssignmentFilter}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
         <div className="flex items-center justify-between gap-4 border-b border-gray-200 bg-white px-4 py-3 shrink-0">
           <div className="text-sm font-semibold text-gray-700">
-            {activeTab === 'MyTickets' ? 'My Tickets' : activeTab === 'AllTickets' ? 'All Tickets' : 'User settings'}
+            {activeTab === 'MyTickets' ? 'My Tickets' : 
+             activeTab === 'AllTickets' ? (
+               sidebarAssignmentFilter === 'assigned' ? 'Assigned Tickets' : 
+               sidebarAssignmentFilter === 'unassigned' ? 'Unassigned Tickets' : 
+               'All Tickets'
+             ) : 'User Settings'}
           </div>
           <button
             type="button"

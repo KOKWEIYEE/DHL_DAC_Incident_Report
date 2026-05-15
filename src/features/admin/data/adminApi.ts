@@ -81,3 +81,19 @@ export async function updateAdminUser(userId: number, updates: { roleName?: stri
     throw new Error(payload.message ?? 'Unable to update user.');
   }
 }
+
+export async function resetAdminUserPassword(userId: number, password: string): Promise<void> {
+  const response = await fetch(`/api/users/${userId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ password }),
+  });
+
+  const payload = (await response.json()) as { message?: string };
+
+  if (!response.ok) {
+    throw new Error(payload.message ?? 'Unable to reset password.');
+  }
+}

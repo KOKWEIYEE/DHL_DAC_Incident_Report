@@ -433,74 +433,74 @@ export function TicketDetailPage({ ticketId, currentUser, onBack }: TicketDetail
                 ))}
               </div>
             </div>
+          </div>
 
-            {/* Combined Comment Editor - Integrated at the bottom across page */}
-            {isAdmin && (
-              <div id="comment-editor" className="mt-auto shrink-0">
-                <div className="bg-white border-t border-gray-200 overflow-hidden flex flex-col shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-                  <div className="flex items-center gap-6 px-8 py-3 border-b border-gray-100">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Comment</span>
+          {/* Combined Comment Editor - Relocated to be pinned at bottom */}
+          {isAdmin && (
+            <div id="comment-editor" className="shrink-0">
+              <div className="bg-white border-t border-gray-200 overflow-hidden flex flex-col shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center gap-6 px-8 py-3 border-b border-gray-100">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-blue-600">Comment</span>
+                </div>
+
+                <div className="flex flex-col flex-1">
+                  <div className="flex items-center gap-1 px-8 py-2 border-b border-gray-100 bg-gray-50/50 overflow-x-auto whitespace-nowrap">
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('bold'); }} className={`p-1.5 rounded transition-all ${activeFormats.bold ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Bold size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('italic'); }} className={`p-1.5 rounded transition-all ${activeFormats.italic ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Italic size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('underline'); }} className={`p-1.5 rounded transition-all ${activeFormats.underline ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Underline size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('strikeThrough'); }} className={`p-1.5 rounded transition-all ${activeFormats.strikeThrough ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Type size={16} strokeWidth={3} /></button>
+                    <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('quote'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Quote size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertUnorderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.unorderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><List size={16} strokeWidth={3} /></button>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertOrderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.orderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><ListOrdered size={16} strokeWidth={3} /></button>
+                    <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
+                    <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('createLink'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Link size={16} strokeWidth={3} /></button>
                   </div>
-
-                  <div className="flex flex-col flex-1">
-                    <div className="flex items-center gap-1 px-8 py-2 border-b border-gray-100 bg-gray-50/50 overflow-x-auto whitespace-nowrap">
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('bold'); }} className={`p-1.5 rounded transition-all ${activeFormats.bold ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Bold size={16} strokeWidth={3} /></button>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('italic'); }} className={`p-1.5 rounded transition-all ${activeFormats.italic ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Italic size={16} strokeWidth={3} /></button>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('underline'); }} className={`p-1.5 rounded transition-all ${activeFormats.underline ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Underline size={16} strokeWidth={3} /></button>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('strikeThrough'); }} className={`p-1.5 rounded transition-all ${activeFormats.strikeThrough ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><Type size={16} strokeWidth={3} /></button>
-                      <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('quote'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Quote size={16} strokeWidth={3} /></button>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertUnorderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.unorderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><List size={16} strokeWidth={3} /></button>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('insertOrderedList'); }} className={`p-1.5 rounded transition-all ${activeFormats.orderedList ? 'bg-gray-200 text-gray-900 border border-gray-300' : 'text-slate-400 hover:text-gray-900 hover:bg-gray-200'}`}><ListOrdered size={16} strokeWidth={3} /></button>
-                      <div className="w-px h-4 bg-gray-300 mx-1 shrink-0"></div>
-                      <button type="button" onMouseDown={(e) => { e.preventDefault(); handleCommand('createLink'); }} className="p-1.5 rounded transition-all text-slate-400 hover:text-gray-900 hover:bg-gray-200"><Link size={16} strokeWidth={3} /></button>
+                  <div 
+                    ref={editorRef}
+                    contentEditable
+                    onInput={(e) => {
+                      setCommentText(e.currentTarget.innerHTML);
+                      updateActiveFormats();
+                    }}
+                    onPaste={handlePaste}
+                    onKeyUp={updateActiveFormats}
+                    onMouseUp={updateActiveFormats}
+                    data-placeholder="Enter your comment here..."
+                    className="w-full bg-white px-8 py-6 text-[15px] text-gray-800 resize-none outline-none min-h-[100px] max-h-[250px] overflow-y-auto border-x border-gray-100 leading-relaxed active:border-0 relative before:content-[attr(data-placeholder)] before:absolute before:left-8 before:top-6 before:text-gray-400 before:pointer-events-none empty:before:block before:hidden"
+                  />
+                  {attachments.length > 0 && (
+                    <div className="px-8 py-4 border-t border-gray-100 flex flex-wrap gap-2">
+                      {attachments.map((file, i) => (
+                        <div key={i} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded text-[13px] text-gray-700 font-medium">
+                          <Paperclip size={14} />
+                          <span className="truncate max-w-[150px]">{file.name}</span>
+                          <button type="button" onClick={() => handleRemoveAttachment(i)} className="text-gray-400 hover:text-red-500 transition-colors">
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                    <div 
-                      ref={editorRef}
-                      contentEditable
-                      onInput={(e) => {
-                        setCommentText(e.currentTarget.innerHTML);
-                        updateActiveFormats();
-                      }}
-                      onPaste={handlePaste}
-                      onKeyUp={updateActiveFormats}
-                      onMouseUp={updateActiveFormats}
-                      placeholder="Enter description here..."
-                      className="w-full bg-white px-8 py-6 text-[15px] text-gray-800 resize-none outline-none min-h-[160px] max-h-[400px] overflow-y-auto empty:before:content-[attr(placeholder)] empty:before:text-gray-400 leading-relaxed active:border-0"
-                    />
-                    {attachments.length > 0 && (
-                      <div className="px-8 py-4 border-t border-gray-100 flex flex-wrap gap-2">
-                        {attachments.map((file, i) => (
-                          <div key={i} className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded text-[13px] text-gray-700 font-medium">
-                            <Paperclip size={14} />
-                            <span className="truncate max-w-[150px]">{file.name}</span>
-                            <button type="button" onClick={() => handleRemoveAttachment(i)} className="text-gray-400 hover:text-red-500 transition-colors">
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                    <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
-                      <div className="flex items-center gap-3 relative cursor-pointer hover:text-blue-600 transition-colors">
-                        <Paperclip size={16} className="text-gray-500" />
-                        <span className="text-xs font-medium text-gray-500">Attach files</span>
-                        <input type="file" multiple onChange={handleFileUpload} accept=".pdf,.docx,.doc,.txt,image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
-                      </div>
-                      <button 
-                        onClick={handleSubmitComment}
-                        disabled={!commentText.replace(/<[^>]*>/g, '').trim() && attachments.length === 0}
-                        className={`flex items-center gap-2 px-8 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-200`}
-                      >
-                        <Send size={14} />
-                        Send Comment
-                      </button>
+                  )}
+                  <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex items-center justify-between">
+                    <div className="flex items-center gap-3 relative cursor-pointer hover:text-blue-600 transition-colors">
+                      <Paperclip size={16} className="text-gray-500" />
+                      <span className="text-xs font-medium text-gray-500">Attach files</span>
+                      <input type="file" multiple onChange={handleFileUpload} accept=".pdf,.docx,.doc,.txt,image/*" className="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                     </div>
+                    <button 
+                      onClick={handleSubmitComment}
+                      disabled={!commentText.replace(/<[^>]*>/g, '').trim() && attachments.length === 0}
+                      className={`flex items-center gap-2 px-8 py-2.5 rounded font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 shrink-0 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-200`}
+                    >
+                      <Send size={14} />
+                      Send Comment
+                    </button>
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </main>
       </div>
 

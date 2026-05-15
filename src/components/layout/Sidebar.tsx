@@ -7,11 +7,17 @@ interface SidebarProps {
   onDashboardClick?: () => void;
   onFilterChange?: (filter: string) => void;
   role?: string;
+  activeTab?: string;
+  activeFilter?: string;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick, onDashboardClick, onFilterChange, role }) => {
+export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClick, onDashboardClick, onFilterChange, role, activeTab, activeFilter }) => {
   const [isTicketsOpen, setIsTicketsOpen] = useState(true);
   const isAdmin = role?.toLowerCase() === 'admin';
+
+  const isDashboardActive = activeTab === 'MyTickets' || activeTab === 'Dashboard';
+  const isTicketsActive = activeTab === 'Tickets' || activeTab === 'AllTickets';
+  const isSettingsActive = activeTab === 'Settings' || activeTab === 'Create User' || activeTab === 'Security';
 
   return (
     <aside className="w-[240px] bg-slate-900 text-white flex flex-col shrink-0 overflow-y-auto hidden md:flex">
@@ -25,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
       <nav className="flex-1 py-4 flex flex-col text-sm">
         <a href="#" 
            onClick={(e) => { e.preventDefault(); if (onDashboardClick) onDashboardClick(); }}
-           className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent">
+           className={`flex items-center gap-3 px-6 py-3 transition-colors border-l-4 ${isDashboardActive ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white border-transparent'}`}>
           <LayoutDashboard size={18} />
           {isAdmin ? 'Dashboard' : 'My Tickets'}
         </a>
@@ -37,7 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
               setIsTicketsOpen(!isTicketsOpen);
               if (onTicketsClick) onTicketsClick();
             }}
-            className={`w-full flex items-center justify-between px-6 py-3 transition-colors border-l-4 cursor-pointer ${isTicketsOpen ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white border-transparent'}`}
+            className={`w-full flex items-center justify-between px-6 py-3 transition-colors border-l-4 cursor-pointer ${isTicketsActive ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white border-transparent'}`}
           >
             <div className="flex items-center gap-3">
               <ClipboardList size={18} />
@@ -50,21 +56,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ onTicketsClick, onSettingsClic
             <div className="flex flex-col bg-slate-900 py-2">
               <a href="#" 
                  onClick={(e) => { e.preventDefault(); onFilterChange?.('assigned'); }}
-                 className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
-                <IdCard size={16} />
+                 className={`flex items-center gap-3 pl-12 pr-6 py-2.5 transition-colors ${activeFilter === 'assigned' ? 'text-white font-bold bg-slate-800/50' : 'text-slate-400 hover:text-white'}`}>
+                <IdCard size={16} className={activeFilter === 'assigned' ? 'text-indigo-400' : ''} />
                 Assigned
               </a>
               <a href="#" 
                  onClick={(e) => { e.preventDefault(); onFilterChange?.('unassigned'); }}
-                 className="flex items-center gap-3 pl-12 pr-6 py-2.5 text-slate-400 hover:text-white transition-colors">
-                <UserX size={16} />
+                 className={`flex items-center gap-3 pl-12 pr-6 py-2.5 transition-colors ${activeFilter === 'unassigned' ? 'text-white font-bold bg-slate-800/50' : 'text-slate-400 hover:text-white'}`}>
+                <UserX size={16} className={activeFilter === 'unassigned' ? 'text-indigo-400' : ''} />
                 Unassigned
               </a>
             </div>
           )}
         </div>
 
-        <a href="#" onClick={(e) => { e.preventDefault(); if (onSettingsClick) onSettingsClick(); }} className="flex items-center gap-3 px-6 py-3 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors border-l-4 border-transparent mt-2">
+        <a href="#" 
+           onClick={(e) => { e.preventDefault(); if (onSettingsClick) onSettingsClick(); }} 
+           className={`flex items-center gap-3 px-6 py-3 transition-colors border-l-4 mt-2 ${isSettingsActive ? 'bg-slate-800 text-white border-indigo-500' : 'text-slate-400 hover:bg-slate-800 hover:text-white border-transparent'}`}>
           <Settings size={18} />
           Settings
         </a>

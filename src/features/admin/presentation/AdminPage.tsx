@@ -42,6 +42,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
     handleTabClick,
     handleToggleUserStatus,
     handleUpdateUser,
+    handleResetPassword,
     searchTerm,
     userActionMessage,
     securitySaved,
@@ -108,12 +109,22 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
         onTicketsClick={handleTicketsNav}
         onSettingsClick={() => setActiveTab('Create User')}
         onFilterChange={handleFilterChange}
+        activeTab={activeTab}
+        activeFilter={sidebarAssignmentFilter}
       />
 
       <main className="flex-1 flex flex-col min-w-0">
         <nav className="h-[64px] bg-white border-b border-gray-200 flex items-center justify-between px-6">
           <div>
-            <div className="text-sm font-semibold text-gray-900">DHL Admin Center</div>
+            <div className="text-sm font-semibold text-gray-900">
+              {activeTab === 'Tickets' ? (
+                sidebarAssignmentFilter === 'assigned' ? 'Assigned Tickets' : 
+                sidebarAssignmentFilter === 'unassigned' ? 'Unassigned Tickets' : 
+                'All Tickets'
+              ) : activeTab === 'Create User' || activeTab === 'Manage User' || activeTab === 'Security' ? (
+                'System Administration'
+              ) : 'DHL Admin Center'}
+            </div>
             <div className="text-xs text-gray-500">Signed in as {currentUser.fullName}</div>
           </div>
 
@@ -129,8 +140,8 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
           )}
         </nav>
 
-        <div className="flex-1 overflow-y-auto">
-          <div className="w-full px-6 py-4">
+        <div className={`flex-1 flex flex-col ${activeTab === 'Tickets' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          <div className={`flex-1 flex flex-col min-h-0 w-full px-6 ${activeTab === 'Tickets' ? 'py-0' : 'py-4'}`}>
             {activeTab !== 'Tickets' && (
             <div className="flex items-center gap-1 bg-gray-200/60 p-1 rounded-lg mb-4 w-fit">
               {(['Create User', 'Manage User', 'Security'] as const).map((tab) => (
@@ -189,6 +200,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                     onToggleUserStatus={handleToggleUserStatus}
                     onRemoveUser={handleRemoveUser}
                     onUpdateUser={handleUpdateUser}
+                    onResetPassword={handleResetPassword}
                   />
                 </motion.div>
               )}
@@ -219,7 +231,7 @@ export function AdminPage({ currentUser, onLogout }: AdminPageProps) {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -12 }}
                   transition={{ duration: 0.2 }}
-                  className="h-[calc(100vh-200px)] flex flex-col"
+                  className="flex-1 flex flex-col min-h-0"
                 >
                   {selectedTicketId ? (
                     <div className="flex-1 overflow-hidden h-full">

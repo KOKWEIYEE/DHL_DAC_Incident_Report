@@ -12,6 +12,7 @@ interface ManageUserFeatureProps {
   onToggleUserStatus: (userId: number) => void;
   onRemoveUser: (userId: number) => void | Promise<void>;
   onUpdateUser: (userId: number, field: 'roleName' | 'department', value: string) => void;
+  onResetPassword: (userId: number) => void;
 }
 
 export function ManageUserFeature({
@@ -24,6 +25,7 @@ export function ManageUserFeature({
   onToggleUserStatus,
   onRemoveUser,
   onUpdateUser,
+  onResetPassword,
 }: ManageUserFeatureProps) {
   const filteredUsers = users.filter((user) => {
     const searchValue = searchTerm.trim().toLowerCase();
@@ -155,6 +157,14 @@ export function ManageUserFeature({
                     <td className="px-6 py-5 text-sm text-gray-600">{user.createdAt}</td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onResetPassword(user.id)}
+                          className="inline-flex items-center gap-1 rounded-md border border-indigo-200 px-3 py-1.5 text-xs font-semibold text-indigo-600 hover:bg-indigo-50"
+                        >
+                          <Shield size={13} />
+                          Reset
+                        </button>
                         <button
                           type="button"
                           onClick={() => onToggleUserStatus(user.id)}

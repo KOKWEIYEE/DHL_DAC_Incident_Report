@@ -59,6 +59,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     }
   };
 
+  const handleForgotPassword = (e: React.MouseEvent) => {
+    e.preventDefault();
+    alert("Please contact the DHL System Administrator at admin@dhl.com or via the internal IT helpdesk to reset your password.");
+  };
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-50 p-4">
       <motion.div 
@@ -118,7 +123,11 @@ export function LoginPage({ onLogin }: LoginPageProps) {
                   <label className="block text-sm font-medium text-gray-700" htmlFor="password">
                     Password
                   </label>
-                  <a href="#" className="text-xs font-semibold text-indigo-600 hover:text-indigo-500">
+                  <a 
+                    href="#" 
+                    onClick={handleForgotPassword}
+                    className="text-xs font-semibold text-indigo-600 hover:text-indigo-500"
+                  >
                     Forgot password?
                   </a>
                 </div>
@@ -190,7 +199,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         </div>
         
         <p className="mt-8 text-center text-xs text-gray-400">
-          © 2024 DHL Incident Report System. All rights reserved. Professional Grade Ticketing.
+          © 2026 DHL Incident Report System. All rights reserved. Professional Grade Ticketing.
         </p>
       </motion.div>
     </div>
