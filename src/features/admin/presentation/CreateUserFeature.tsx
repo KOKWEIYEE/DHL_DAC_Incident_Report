@@ -102,9 +102,9 @@ export function CreateUserFeature({ formData, isSuccess, error, onFieldChange, o
               className="w-full py-1.5 px-3 bg-transparent border-0 focus:ring-0 outline-none transition-all text-sm text-gray-900"
             >
               <option value="">Select a role</option>
-              <option value="member">Member</option>
-              <option value="leader">Leader</option>
-              <option value="manager">Manager</option>
+              <option value="Member">Member</option>
+              <option value="Leader">Leader</option>
+              <option value="Manager">Manager</option>
             </select>
           </div>
         </div>

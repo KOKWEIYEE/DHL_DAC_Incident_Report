@@ -50,14 +50,14 @@ app.get('/api/users', async (_req, res) => {
       fullName: user.full_name,
       department: user.department ?? 'Unassigned',
       roleId: user.role_id,
-      roleName: user.role_name,
+      roleName: user.role_name.charAt(0).toUpperCase() + user.role_name.slice(1),
       createdAt: user.created_at,
     })),
   });
 });
 
 app.post('/api/users', async (req, res) => {
-  const { username, password, fullName, department, roleName = 'user' } = req.body as {
+  const { username, password, fullName, department, roleName = 'Member' } = req.body as {
     username?: string;
     password?: string;
     fullName?: string;
@@ -173,9 +173,15 @@ app.patch('/api/users/:id', async (req, res) => {
   }
 
   values.push(userId);
-  await pool.execute(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
-
-  res.json({ message: 'User updated successfully.' });
+  console.log(`Updating user ${userId} with:`, { updates, values });
+  
+  try {
+    await pool.execute(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
+    res.json({ message: 'User updated successfully.' });
+  } catch (error: any) {
+    console.error(`Database error updating user ${userId}:`, error);
+    res.status(500).json({ message: 'Failed to update user in database.', error: error.message });
+  }
 });
 
 app.delete('/api/users/:id', async (req, res) => {
@@ -208,9 +214,10 @@ app.post('/api/auth/login', async (req, res) => {
     };
 
     if (!username || !password) {
-      res.status(400).json({ message: 'username and password are required.' });
-      return;
+      return res.status(400).json({ message: 'Username and password are required.' });
     }
+
+    console.log(`Login attempt for username: ${username}`);
 
     const [rows] = await pool.query<UserRow[]>(
       `SELECT u.id, u.username, u.password_hash, u.full_name, u.department, u.role_id, r.role_name, u.avatar, u.created_at
@@ -222,10 +229,18 @@ app.post('/api/auth/login', async (req, res) => {
     );
 
     const user = rows[0];
-    if (!user || !(await verifyPassword(password, user.password_hash))) {
-      res.status(401).json({ message: 'Invalid username or password.' });
-      return;
+    if (!user) {
+      console.log(`Login failed: User ${username} not found.`);
+      return res.status(401).json({ message: 'Invalid username or password.' });
     }
+
+    const isValid = await verifyPassword(password, user.password_hash);
+    if (!isValid) {
+      console.log(`Login failed: Invalid password for user ${username}.`);
+      return res.status(401).json({ message: 'Invalid username or password.' });
+    }
+
+    console.log(`Login successful: ${username} (ID: ${user.id})`);
 
     res.json({
       user: {
@@ -234,14 +249,22 @@ app.post('/api/auth/login', async (req, res) => {
         fullName: user.full_name,
         department: user.department,
         roleId: user.role_id,
-        roleName: user.role_name,
+        roleName: user.role_name.charAt(0).toUpperCase() + user.role_name.slice(1),
         createdAt: user.created_at,
         avatar: user.avatar,
       },
     });
   } catch (error: any) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'An internal error occurred during sign-in.', error: error.message });
+    console.error('CRITICAL LOGIN ERROR:', {
+      message: error.message,
+      stack: error.stack,
+      body: req.body
+    });
+    res.status(500).json({ 
+      message: 'An internal error occurred during sign-in.', 
+      error: error.message,
+      stack: error.stack
+    });
   }
 });
 

@@ -126,6 +126,7 @@ export function ManageUserFeature({
                         onChange={(e) => onUpdateUser(user.id, 'department', e.target.value)}
                         className="bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-indigo-500 outline-none text-sm py-1 transition-colors"
                       >
+                        <option value="Unassigned">Unassigned</option>
                         <option value="IT Services">IT Services</option>
                         <option value="Operation">Operation</option>
                         <option value="Customer Services">Customer Services</option>
@@ -139,9 +140,9 @@ export function ManageUserFeature({
                         onChange={(e) => onUpdateUser(user.id, 'roleName', e.target.value)}
                         className="bg-transparent border-0 border-b border-transparent hover:border-gray-300 focus:border-indigo-500 outline-none text-sm py-1 transition-colors"
                       >
-                        <option value="member">Member</option>
-                        <option value="leader">Leader</option>
-                        <option value="manager">Manager</option>
+                        <option value="Member">Member</option>
+                        <option value="Leader">Leader</option>
+                        <option value="Manager">Manager</option>
                       </select>
                     </td>
                     <td className="px-6 py-5">
